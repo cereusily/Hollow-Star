@@ -34,6 +34,9 @@ class Player extends Character {
     // Calls projectile hit
     checkProjectiles();
     
+    // Checks health
+    checkHealth();
+    
   }
   
   void drawMe() {
@@ -49,20 +52,22 @@ class Player extends Character {
     //ellipse(0, 0, 400, 400);
         
     // Draws thrusters
+    push();
+    rotate(rotateFactor);
     stroke(0, 0, 255);
     fill(255);
     ellipse(-125, 150, 30 + jitter, 80 + jitter);
     ellipse(125, 150, 30 + jitter, 80 + jitter);
+    pop();
     
     // Draws ship
     push();
     shapeMode(CENTER);
+    rotate(rotateFactor);
     translate(-charWidth - charWidth/4, -charHeight - charWidth/4);
     shape(shipShape);
     pop();
     
-    
-
     pop();
   }
   
@@ -71,10 +76,6 @@ class Player extends Character {
     if (health < 0) {
       mainBody.setFill(255);
     }
-  }
-  
-  void updateThrusters() {
-    //
   }
   
   void checkProjectiles() {

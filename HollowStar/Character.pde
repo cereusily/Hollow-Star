@@ -12,7 +12,6 @@ class Character {
   
   // Inits character
   Character(PVector pos, PVector vel, int health, int charWidth, int charHeight, float scaleFactor) {
-
     this.pos = pos;
     this.vel = vel;
     this.health = health;

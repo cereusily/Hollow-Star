@@ -33,7 +33,7 @@ ArrayList<Star> stars = new ArrayList<Star>();
 ArrayList<Enemy> enemies = new ArrayList<Enemy>();
 
 void debug() {
-  println(player.playerBullets.size());
+  println(player.health);
 }
 
 void setup() {
@@ -114,9 +114,11 @@ void keyPressed() {
     }
     if (keyCode == LEFT) {
       moveLeft = true;
+      player.rotateFactor = -PI/8;
     }
     if (keyCode == RIGHT) {
       moveRight = true;
+      player.rotateFactor = PI/8;
     }
   }
   // Player bullets
@@ -140,9 +142,11 @@ void keyReleased() {
     }
     if (keyCode == LEFT) {
       moveLeft = false;
+      player.rotateFactor = 0;
     }
     if (keyCode == RIGHT) {
       moveRight = false;
+      player.rotateFactor = 0;
     }
   }
   // Player bullets
