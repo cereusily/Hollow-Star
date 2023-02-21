@@ -14,6 +14,9 @@ class Player extends Character {
   ArrayList<Bullet> playerBullets = new ArrayList<Bullet>();
   
   int bulletPower = 1;
+  int deathTimer= -1;
+  int deathAnimationTime = 30;
+  PVector deathPosition;
   
   
   Player(PVector pos, PVector vel, int health, int charWidth, int charHeight, float scaleFactor) {
@@ -22,6 +25,9 @@ class Player extends Character {
     
     // Creates PShape group to house drawings
     shipShape = createShape(GROUP);
+    
+    // Init ship shape
+    initShipShape();
   }
   
   void update() {
@@ -33,10 +39,37 @@ class Player extends Character {
     
     // Calls projectile hit
     checkProjectiles();
-    
+
     // Checks health
     checkHealth();
     
+    // Death timer
+    if (deathTimer > 0) {
+      deathTimer--;
+    }
+    
+    if (deathTimer == 0) {
+      drawDeath();
+      players.remove(this);
+    }
+  }
+  
+  void drawDeath() {
+    for (String name : playerShipParts.keySet()){
+      breakPart(name);
+    }
+  }
+  
+  void breakPart(String partName) {
+    // breaks specific part
+    int x = (int) random(-2, 2);
+    int y = (int) random(-1, -2);
+    
+    PVector tempPos = new PVector();
+    tempPos = this.pos.copy();
+    
+    PShape brokenPart = shipShape.getChild(playerShipParts.get(partName));
+    parts.add(new Part(tempPos, new PVector(x, y), 160, brokenPart, this.scaleFactor, PI/20, 1000));
   }
   
   void drawMe() {
@@ -64,18 +97,36 @@ class Player extends Character {
     push();
     shapeMode(CENTER);
     rotate(rotateFactor);
-    translate(-charWidth - charWidth/4, -charHeight - charWidth/4);
+    translate(-charWidth * 1.95, -charHeight * 1.95);
     shape(shipShape);
     pop();
     
     pop();
   }
   
+  boolean isAlive() {
+    return deathTimer == -1;
+  }
+  
   void checkHealth() {
-    PShape mainBody = shipShape.getChild(9);
+    // Checks health & changes colour depending on damage
     if (health < 0) {
-      mainBody.setFill(255);
+      
+      if (isAlive()) {      
+        deathTimer = deathAnimationTime;
+        //this.vel = new PVector(0, 0);
+        screenShake = 100;
+      }
     }
+  }
+  
+  void fireBullet() {
+    /* Creates new bullet and adds to playerBullet list */ // -> +/-35 for outer guns
+    Bullet newBulletLeft = new Bullet(new PVector(pos.x - 22, pos.y), new PVector(0, -10));
+    Bullet newBulletRight = new Bullet(new PVector(pos.x + 22, pos.y), new PVector(0, -10));
+    
+    playerBullets.add(newBulletLeft);
+    playerBullets.add(newBulletRight);
   }
   
   void checkProjectiles() {
@@ -86,13 +137,16 @@ class Player extends Character {
       for (int j = 0; j < enemies.size(); j++) {
         Enemy currEnemy = enemies.get(j);
         if (dist(currBullet.pos.x, currBullet.pos.y, currEnemy.pos.x, currEnemy.pos.y) < currEnemy.charWidth) {
-          currEnemy.enemyColour = color(0, 150, 0);   // Changes colour of enemy if hit
-          currEnemy.decreaseHealth(bulletPower);     // Decreases enemy health
-          currBullet.removeSelf();                  // Removes bullet that hit enemy
+          currEnemy.decreaseHealth(bulletPower); 
+          screenShakeTimer = 10;
+          currEnemy.pos.y -= 5;
+          currBullet.removeSelf();
         }
       }   
     } 
   }
+  
+  
   
   void initShipShape() {
     // Populates shipShape group with drawing shapes
