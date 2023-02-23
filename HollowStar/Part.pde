@@ -11,13 +11,12 @@ class Part extends Bullet {
   
   Part(PVector pos, PVector vel, int charHeight, PShape partShape, float partScale, float rotateFactor, int removeTimer) {
     // Calls parent function
-    super(pos, vel);
+    super(pos, vel, charHeight, charHeight);
     
     // Inits part shape
     this.partShape = partShape;
     this.partScale = partScale;
     this.rotateFactor = rotateFactor;
-    this.charHeight = charHeight;
     this.removeTimer = removeTimer;
     randomRotate = (float) random(100, 400);
     

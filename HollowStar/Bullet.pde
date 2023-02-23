@@ -5,22 +5,52 @@ class Bullet {
   PVector vel;
   
   float bulletSpeed = 1.0;
-  int bulletWidth = 10;
-  int bulletHeight = 30;
-  color bulletOuterColour = color(255, 0, 0);
-  color bulletInnerColour = color(255);
+  int bulletWidth;
+  int bulletHeight;
+  color bulletOuterColour;
+  color bulletInnerColour;
   
-  Bullet(PVector initPos, PVector initVel) {
-    this.pos = initPos;
-    this.vel = initVel;
+  String state = "BLUE";
+  color stateColour;
+  
+  Bullet(PVector initPos, PVector initVel, int bWidth, int bHeight) {
+    pos = initPos;
+    vel = initVel;
+   
+    bulletWidth = bWidth;
+    bulletHeight = bHeight;
+    
+    bulletInnerColour = color(255);
   }
   
   void update() {
     move();
+    updateBulletColour();
+  }
+  
+  void updateBulletColour() {
+    // Updates ship color to state color
+    switch(state){
+      case "BLUE":
+        stateColour = blue;
+        break;
+      case "RED":
+        stateColour = red;
+        break;
+    } 
+    bulletOuterColour = stateColour; 
   }
   
   void move() {
     pos.add(vel);
+  }
+  
+  void setState(String newState) {
+    this.state = newState;
+  }
+  
+  String getState() {
+    return this.state;
   }
   
   boolean offScreen() {
@@ -38,9 +68,9 @@ class Bullet {
     push();
     translate(pos.x, pos.y);
     rectMode(CENTER);
+    strokeWeight(2);
     fill(bulletInnerColour);
     stroke(bulletOuterColour);
-    strokeWeight(1);
     ellipse(0, 0, bulletWidth, bulletHeight);
     pop();
   }

@@ -1,9 +1,10 @@
 class Star extends Bullet {
   /* Class that manages star object */ 
+  
   Star(PVector initPos, PVector initVel) {
     
     // Inits from parent bullet class
-    super(initPos, initVel);
+    super(initPos, initVel, 2, 2);
   }
   
   void drawMe() {

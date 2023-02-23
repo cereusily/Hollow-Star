@@ -9,17 +9,39 @@ class Enemy extends Character {
   
   int deathTimer = -1;
   int deathAnimationTime = 5;
+  int points = 100;
+  int screenShakeValue = 15;
+  
+  String state;
+  color stateColour;
+  boolean isElite;
   
   
-  Enemy(PVector pos, PVector vel, int health, int charWidth, int charHeight, float scaleFactor) {
+  
+  Enemy(PVector pos, PVector vel, int health, int charWidth, int charHeight, float scaleFactor, String state, boolean isElite) {
     // Inits fields
     super(pos, vel, health, charWidth, charHeight, scaleFactor);
+    
+    this.isElite = isElite;
+    this.state = state;
     
     // Create group
     shipShape = createShape(GROUP);
     
     // Draws ship
     initShipShape();
+    
+    // Updates colour states;
+    updateShipColour();
+    
+    // Initializes colour
+    initShipColour();
+    
+    // Checks if elite
+    if (isElite) {
+      this.points = 300;
+      this.screenShakeValue = 40;
+    }
   }
   
   void update() {
@@ -36,13 +58,14 @@ class Enemy extends Character {
     
     if (deathTimer == 0) {
       drawDeath();
+      score += this.points;
       enemies.remove(this);
     }
     
     // Checks if touched player
     if (hitCharacter(player)) {
       player.decreaseHealth(enemyPower);
-      screenShakeTimer = 15;
+      screenShakeTimer = screenShakeValue;
     }
   }
   
@@ -52,7 +75,7 @@ class Enemy extends Character {
     
     translate(pos.x, pos.y);
     
-    // Bounding radial
+     // Bounding radial
     //fill(enemyColour);
     //ellipse(0, 0, charWidth, charHeight);
     
@@ -75,6 +98,26 @@ class Enemy extends Character {
       }
     }
   }
+  String getState() {
+    return this.state;
+  }
+  
+  void setState(String newState) {
+    this.state = newState;
+  }
+  
+  void updateShipColour() {
+    // Updates ship color to state color
+    switch(state){
+      case "BLUE":
+        stateColour = blue;
+        break;
+      case "RED":
+        stateColour = red;
+        break;
+    }
+    initShipColour(); 
+  }
   
   boolean isAlive() {
     return deathTimer == -1;
@@ -87,7 +130,7 @@ class Enemy extends Character {
     (pos.y < -charWidth/2) || (pos.y > height + charWidth/2));
   }
   
-  void drawDeath() {
+  void drawDeath() {    
     for (String name : enemyShipParts.keySet()){
       breakPart(name);
     }
@@ -95,14 +138,31 @@ class Enemy extends Character {
   
   void breakPart(String partName) {
     // breaks specific part
-    int x = (int) random(-2, 2);
-    int y = (int) random(-1, -2);
+    float x = (float) random(-2, 2);
+    float y = (float) random(-1, -2);
     
     PVector tempPos = new PVector();
     tempPos = this.pos.copy();
     
     PShape brokenPart = shipShape.getChild(enemyShipParts.get(partName));
     parts.add(new Part(tempPos, new PVector(x, y), 80, brokenPart, this.scaleFactor  * 0.5, PI/20, 100));
+  }
+  
+  void initShipColour() {
+    PShape leftOuterWing = shipShape.getChild(enemyShipParts.get("LeftOuterWing"));    
+    leftOuterWing.setFill(stateColour);  
+    
+    PShape rightOuterWing = shipShape.getChild(enemyShipParts.get("RightOuterWing"));
+    rightOuterWing.setFill(stateColour);
+    
+    PShape leftInnerWing = shipShape.getChild(enemyShipParts.get("LeftInnerWing"));    
+    leftInnerWing.setFill(stateColour);  
+    
+    PShape rightInnerWing = shipShape.getChild(enemyShipParts.get("RightInnerWing"));
+    rightInnerWing.setFill(stateColour);
+    
+    PShape mainWindow = shipShape.getChild(enemyShipParts.get("MainWindow"));
+    mainWindow.setFill(stateColour);
   }
   
   void initShipShape() {

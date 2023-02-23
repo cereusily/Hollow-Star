@@ -19,6 +19,12 @@ class GameManager {
   PVector rightAcc = new PVector(2, 0);
   
   float enemyScale = 0.3;
+  int enemyWidth = 120;  // => Basic enemy scale
+  
+  int enemyRespawnTime = 4_000;
+  int enemyRespawnStartTime;
+  
+  PFont font;
 
   GameManager() {
     // Constructor
@@ -30,6 +36,9 @@ class GameManager {
     // Populates hashmaps
     initPartsMap();
     
+    // Loads font
+    font = createFont("VCR_OSD_MONO_1.001.ttf", 128);
+    
     // Initializes player & inits PShape group
     player = new Player(new PVector(width/2.25, height/1.5), new PVector(), 1, shipWidth, shipWidth, 0.2);
     
@@ -37,15 +46,39 @@ class GameManager {
     players.add(player);
     
     // Initializes enemies
-    for (int i = 0; i < numEnemies; i++) {
-      addNewEnemy();
+    // Debug add elite enemy
+    enemies.add(new Enemy(new PVector(200, 0), new PVector(0, 0.5), 4, 120, 120, 0.5, "BLUE", true));
+
+    // Creates initial fleet
+    createFleet();
+  }
+  
+  void debug() {
+    respawnFleet();
+  }
+  
+  void createFleet() {
+    // Create an alien and find the number of enemies in a row.
+    int xSpace = (width / (enemyWidth + 50));
+    
+    // Spawns in basic enemies horizontally
+    for (int i = 0; i < xSpace + 1; i++) {
+      String randomState = ((int) random(-1, 2) > 0) ? "BLUE" : "RED";
+      addNewEnemy(enemyWidth + (i * 150), 0, randomState);
     }
   }
   
-  void debugAddEnemies() {
-    // Initializes enemies
-    for (int i = 0; i < numEnemies; i++) {
-      addNewEnemy();
+  void respawnFleet() {
+    // Check time passed
+    int passedTime = millis() - enemyRespawnStartTime;
+    
+    // Checks if fleet size less than 10
+    if (enemies.size() < 10) {
+      // Respawns fleet if enough time passed
+      if (passedTime> enemyRespawnTime) {
+        createFleet();
+        enemyRespawnStartTime = millis();
+      }
     }
   }
   
@@ -66,14 +99,13 @@ class GameManager {
         moveRight = true;
         player.rotateFactor = PI/8;
       }
+      if (keyCode == SHIFT) {
+        player.switchState();
+      }
     }
     // Player bullets
     if (key == ' ') {
       holdFire = true;
-    }
-    
-    if (key == 'q') {
-      debugAddEnemies();
     }
     
     // Ends game
@@ -140,11 +172,10 @@ class GameManager {
     stars.add(newStar);
   }
   
-  void addNewEnemy() {
-    // Adds new enemy
-    int bx = (int) random(enemyWidth/2, width - enemyWidth/2);
-    
-    enemies.add(new Enemy(new PVector(bx, 0), new PVector(0, 2), 2, enemyWidth, enemyWidth, enemyScale));
+  void addNewEnemy(int x, int y, String state) {
+    // Adds new enemy at a specific row location
+    PVector position = new PVector(x, y);
+    enemies.add(new Enemy(position, new PVector(0, 2), 2, enemyWidth - 45, enemyWidth - 45, enemyScale, state, false));
   }
   
   
@@ -230,6 +261,19 @@ class GameManager {
       // Removes part if off screen
       if (currPart.offScreen()) {
         parts.remove(i);
+      }
+    }
+  }
+  
+  void updateExplosionParticles() {
+    for(int i = 0; i < explosionParticles.size(); i++) {
+      Bullet currParticle = explosionParticles.get(i);
+      
+      currParticle.update();
+      
+      // Removes part if off screen
+      if (currParticle.offScreen()) {
+        explosionParticles.remove(i);
       }
     }
   }

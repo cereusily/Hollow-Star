@@ -12,11 +12,18 @@ class Player extends Character {
   PShape shipShape;
   
   ArrayList<Bullet> playerBullets = new ArrayList<Bullet>();
-  
   int bulletPower = 1;
+  
+  color bulletOuterColour = color(0, 0, 255);
+  color bulletInnerColour = color(255);
+  
+  
   int deathTimer= -1;
   int deathAnimationTime = 30;
   PVector deathPosition;
+    
+  String state = "BLUE";
+  color stateColour = blue;
   
   
   Player(PVector pos, PVector vel, int health, int charWidth, int charHeight, float scaleFactor) {
@@ -52,18 +59,55 @@ class Player extends Character {
       drawDeath();
       players.remove(this);
     }
+    
+    // Check color state => Refactor to game manager later
+    updateShipColour();
+  }
+  
+  void switchState() {
+    // Swaps states
+    state = (state == "BLUE" ? "RED" : "BLUE");
+  }
+  
+  String getState() {
+    return this.state;
+  }
+  
+  void setState(String newState) {
+    this.state = newState;
+  }
+  
+  void updateShipColour() {
+    // Updates ship color to state color
+    switch(state){
+      case "BLUE":
+        stateColour = blue;
+        break;
+      case "RED":
+        stateColour = red;
+        break;
+    }
+    
+    PShape mainBody = shipShape.getChild(playerShipParts.get("MainBody"));    
+    mainBody.setFill(stateColour); 
   }
   
   void drawDeath() {
-    for (String name : playerShipParts.keySet()){
+    // Draws death animation
+    //for (int i = 0; i < 6; i++) {
+    //  explosionParticles.add(new Bullet(this.pos, new PVector(2, 2), 20, 20));
+    //}
+    
+    // Creates destroyed parts
+    for (String name : playerShipParts.keySet()) {
       breakPart(name);
     }
   }
   
   void breakPart(String partName) {
     // breaks specific part
-    int x = (int) random(-2, 2);
-    int y = (int) random(-1, -2);
+    float x = (float) random(-2, 2);
+    float y = (float) random(-1, -2);
     
     PVector tempPos = new PVector();
     tempPos = this.pos.copy();
@@ -122,8 +166,11 @@ class Player extends Character {
   
   void fireBullet() {
     /* Creates new bullet and adds to playerBullet list */ // -> +/-35 for outer guns
-    Bullet newBulletLeft = new Bullet(new PVector(pos.x - 22, pos.y), new PVector(0, -10));
-    Bullet newBulletRight = new Bullet(new PVector(pos.x + 22, pos.y), new PVector(0, -10));
+    Bullet newBulletLeft = new Bullet(new PVector(pos.x - 22, pos.y), new PVector(0, -10), 10, 30);
+    Bullet newBulletRight = new Bullet(new PVector(pos.x + 22, pos.y), new PVector(0, -10), 10, 30);
+    
+    newBulletLeft.setState(this.getState());
+    newBulletRight.setState(this.getState());
     
     playerBullets.add(newBulletLeft);
     playerBullets.add(newBulletRight);
@@ -134,15 +181,20 @@ class Player extends Character {
     for (int i = 0; i < playerBullets.size(); i++) {
       Bullet currBullet = playerBullets.get(i);
       
+      // Regular enemies
       for (int j = 0; j < enemies.size(); j++) {
         Enemy currEnemy = enemies.get(j);
-        if (dist(currBullet.pos.x, currBullet.pos.y, currEnemy.pos.x, currEnemy.pos.y) < currEnemy.charWidth) {
-          currEnemy.decreaseHealth(bulletPower); 
-          screenShakeTimer = 10;
-          currEnemy.pos.y -= 5;
-          currBullet.removeSelf();
+        
+        // Check if player states matches enemies
+        if (currEnemy.getState() == currBullet.getState()) {
+          if (dist(currBullet.pos.x, currBullet.pos.y, currEnemy.pos.x, currEnemy.pos.y) < currEnemy.charWidth) {
+            currEnemy.decreaseHealth(bulletPower); 
+            screenShakeTimer = 2;
+            currEnemy.pos.y -= 5;
+            currBullet.removeSelf();
+          }
         }
-      }   
+      }  
     } 
   }
   
