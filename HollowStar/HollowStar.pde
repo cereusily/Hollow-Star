@@ -12,19 +12,21 @@ Enemy enemyOne;
 int enemyWidth = 80;
 int numEnemies = 10;
 
-float screenShake = 3;
+float screenShake;
 float screenShakeTimer;
 float screenJitter;
-int timeSlow = 1;
 
 int score;
 
-float playerDeathTimer;
+int playerDeathTimer = -1;
+int restartTime = 80;
+
+boolean isActive;
+boolean gameOver;
 
 ArrayList<Player> players = new ArrayList<Player>();
 ArrayList<Star> stars = new ArrayList<Star>();
 ArrayList<Enemy> enemies = new ArrayList<Enemy>();
-ArrayList<Bullet> explosionParticles = new ArrayList<Bullet>();
 ArrayList<Part> parts = new ArrayList<Part>();
 
 GameManager gameManager = new GameManager();
@@ -32,22 +34,21 @@ GameManager gameManager = new GameManager();
 HashMap<String, Integer> playerShipParts = new HashMap<String, Integer>();
 HashMap<String, Integer> enemyShipParts = new HashMap<String, Integer>();
 
+Debug debug = new Debug(false);
 
-void debug() {
-  println(explosionParticles.size());
-}
 
 void displayText() {
   textFont(gameManager.font);
   textSize(30);
   fill(255);
-  text("HI SCORE: " + str(score), 10, 50);
+  text("HI SCORE: " + str(score), 20, 50);
+  text("LIVES: " + str(gameManager.lives), width - 175, 50);
 }
 
 void setup() {
   
   // Sets up window & background
-  size(1200, 1000);
+  size(1200, 800);
   background(0);
   
   // Init assest from GameManager;
@@ -57,49 +58,90 @@ void setup() {
 
 void draw() {
   /* Runs main game loop */
-  push();
   
-  // Calculates screen jitter
-  if (screenShakeTimer > 0) {
-    screenJitter = random(-screenShake, screenShake);
-    translate(screenJitter, screenJitter);
-    screenShakeTimer--;
-  }
+  if (isActive) {
+    push();
   
-  // Checks for player input
-  gameManager.checkEvents();
-  
-  // Updates player state
-  gameManager.updatePlayer();
-  
-  // Updates player bullets state
-  gameManager.updatePlayerBullets();
-  
-  // Will freeze game if player dies
-  if (player.isAlive()) {
-    // Updates stars state
-    gameManager.updateStars();
+    // Clears screen
+    background(0);
     
-    // Updates enemies state
-    gameManager.updateEnemies();
+    // Calculates screen jitter
+    if (screenShakeTimer > 0) {
+      screenJitter = random(-screenShake, screenShake);
+      translate(screenJitter, screenJitter);
+      screenShakeTimer--;
+    }
     
-    // Respawns fleet
-    gameManager.respawnFleet();
+    // Checks for player input
+    gameManager.checkEvents();
+    
+    // Updates player state
+    gameManager.updatePlayer();
+    
+    // Will freeze game if player dies
+    if (player.isAlive()) {
+      // Updates stars state
+      gameManager.updateStars();
+      
+      // Updates enemies state
+      gameManager.updateEnemies();
+      
+      // Respawns fleet if wave is ongoing
+      if (!gameManager.waveOver) {
+        gameManager.respawnFleet();
+      }
+      // if wave over, spawn boss
+      else {
+        if (enemies.size() == 0 && !gameManager.bossSpawned) {
+          gameManager.addBossEnemy();  // Waits until all enemies are gone
+          gameManager.bossSpawned = true;  // Toggles off boss spawned
+        }
+      } 
+    }
+    else {
+      // Player is dead; game over
+      if (gameManager.lives > 0) {  // => if have lives, respawn
+        // => reset game
+        //gameManager.lives -= 1;
+        
+        if (playerDeathTimer == -1) {
+          playerDeathTimer = restartTime;
+        }
+        
+        if (playerDeathTimer > 0) {
+          playerDeathTimer--;
+        }
+        
+        if (playerDeathTimer == 0) {
+          gameManager.lives -= 1;
+          gameManager.restart();
+        }
+      }
+      else {
+        // => displays game over
+        textAlign(CENTER);
+        text("GAME OVER", width/2, 400);
+        textSize(12);
+        text("< PRESS ENTER/RETURN TO CONTINUE >", width/2, 450);
+        textAlign(LEFT);
+        gameOver = true;
+      } 
+    }
+    
+    // Updates parts state
+    gameManager.updateParts();
+    
+    // Updates player bullets state
+    gameManager.updatePlayerBullets();
+    
+    // Updates screen with changes
+    updateScreen();
+    
+    // Debug
+    debug.drawDebug();
+  
+    pop();
   }
-  
-  // Updates parts state
-  gameManager.updateParts();
-  
-  // Updates particles states
-  gameManager.updateExplosionParticles();
-  
-  // Updates screen with changes
-  updateScreen();
-
-  // Debug
-  gameManager.debug();
-
-  pop();
 }
 
 // Stores states for keys
@@ -112,52 +154,24 @@ void keyReleased() {
 }
 
 void updateScreen() {
-  /* Updates sprites and background on screen */
-  background(0);
+  /* Updates miscellaneous sprites background on screen */
   
   // Adds stars
   if (gameManager.starOffCoolDown()) {
     gameManager.addStar();
   };
-  
-  // Updates player bullet sprites
-  for (int i = 0; i < player.playerBullets.size(); i++) {
-    Bullet currPlayerBullet = player.playerBullets.get(i);
-    currPlayerBullet.drawMe();
-  }
-  
-  // Updates star sprites
-  for (int i = 0; i < stars.size(); i++) {
-    Star currStar = stars.get(i);
-    currStar.drawMe();
-  }
     
   // Update player sprites
   if (player.isAlive()) {
     player.drawMe();
   }
   
-  // Updates enemy sprites
-  for (int i = 0; i < enemies.size(); i++) {
-    Enemy currEnemy = enemies.get(i);
-    currEnemy.drawMe();
-  }
+  // Updates wave time
+  gameManager.updateWaveTime();
   
-  // Updates parts sprites
-  if (parts != null) {
-    for (int i = 0; i < parts.size(); i++) {
-      Part currPart = parts.get(i);
-      currPart.drawMe();
-    }
-  }
-  
-  // Updates explosion particles
-  if (explosionParticles != null) {
-    for (int i = 0; i < explosionParticles.size(); i++) {
-      Bullet currParticle = explosionParticles.get(i);
-      currParticle.drawMe();
-    }
-  }
     // display text
   displayText();
+  
+  // Debug
+  debug.updateDebug();
 }

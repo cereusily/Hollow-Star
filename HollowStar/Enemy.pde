@@ -9,21 +9,21 @@ class Enemy extends Character {
   
   int deathTimer = -1;
   int deathAnimationTime = 5;
-  int points = 100;
-  int screenShakeValue = 15;
+  int points;
+  int screenShakeValue;
   
   String state;
   color stateColour;
-  boolean isElite;
+  String enemyType;
   
   
   
-  Enemy(PVector pos, PVector vel, int health, int charWidth, int charHeight, float scaleFactor, String state, boolean isElite) {
+  Enemy(PVector pos, PVector vel, int health, int charWidth, int charHeight, float scaleFactor, String state, String enemyType) {
     // Inits fields
     super(pos, vel, health, charWidth, charHeight, scaleFactor);
     
-    this.isElite = isElite;
     this.state = state;
+    this.enemyType = enemyType;
     
     // Create group
     shipShape = createShape(GROUP);
@@ -37,10 +37,21 @@ class Enemy extends Character {
     // Initializes colour
     initShipColour();
     
-    // Checks if elite
-    if (isElite) {
-      this.points = 300;
-      this.screenShakeValue = 40;
+    // Checks what type of basic enemy
+    
+    switch(enemyType) {
+      case "ELITE":
+        this.points = 300;
+        this.screenShakeValue = 40;
+        break;
+      case "NODE":
+        this.points = 150;
+        this.screenShakeValue = 10;
+        this.vel = new PVector(0, 0);
+      default:
+        this.points = 100;
+        this.screenShakeValue = 15;
+        break;
     }
   }
   
@@ -75,12 +86,14 @@ class Enemy extends Character {
     
     translate(pos.x, pos.y);
     
-     // Bounding radial
-    //fill(enemyColour);
-    //ellipse(0, 0, charWidth, charHeight);
-    
+   // Bounding radial
+   if (debug.active) {
+     fill(enemyColour);
+     ellipse(0, 0, charWidth, charHeight);
+   }
+  
     push();
-    translate(-charWidth/1.35, -charHeight/1.35);
+    translate(-charWidth + charWidth/6, -charHeight + charHeight/10);
     scale(scaleFactor);
     shape(shipShape);  
     pop();

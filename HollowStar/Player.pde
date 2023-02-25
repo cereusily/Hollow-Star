@@ -16,7 +16,11 @@ class Player extends Character {
   
   color bulletOuterColour = color(0, 0, 255);
   color bulletInnerColour = color(255);
+  int bulletCooldown;
+  int bulletThreshold = 100;
   
+  int switchCooldown;
+  int switchThreshold = 20;
   
   int deathTimer= -1;
   int deathAnimationTime = 30;
@@ -43,6 +47,11 @@ class Player extends Character {
     
     // Calls parent update function
     super.update();
+
+    // Checks switching cooldown
+    if (switchCooldown < switchThreshold) {
+      switchCooldown++;
+    }
     
     // Calls projectile hit
     checkProjectiles();
@@ -59,14 +68,39 @@ class Player extends Character {
       drawDeath();
       players.remove(this);
     }
-    
+
     // Check color state => Refactor to game manager later
     updateShipColour();
+    
   }
+  
+  void displayBar() {
+    // Displays gun bar
+    stroke(255);
+    strokeWeight(2);
+    fill(255, 0, 0);
+    rect(200, 100, 100, 20);
+    strokeWeight(0);
+    
+    fill(0, 255, 0);
+    rect(200, 100, map(bulletCooldown, 0, bulletThreshold, 0, 100), 20);
+    
+  }
+  
+  void displayArc() {
+    // Displays gun arc
+    float angle = map(switchCooldown, 0, switchThreshold, 0, TWO_PI);
+    fill(this.stateColour);
+    arc(0, 0, 500, 500, 0, angle);
+    fill(0);
+    ellipse(0, 0, 440, 440);
+  }
+
   
   void switchState() {
     // Swaps states
-    state = (state == "BLUE" ? "RED" : "BLUE");
+    this.switchCooldown = 0;
+    this.setState((state == "BLUE" ? "RED" : "BLUE"));
   }
   
   String getState() {
@@ -88,15 +122,20 @@ class Player extends Character {
         break;
     }
     
+    // Updates main body
     PShape mainBody = shipShape.getChild(playerShipParts.get("MainBody"));    
     mainBody.setFill(stateColour); 
+    
+    color secondaryFill = (state == "BLUE" ? blueGray : orange);
+    
+    PShape leftWing = shipShape.getChild(playerShipParts.get("LeftWing"));    
+    leftWing.setFill(secondaryFill); 
+    PShape rightWing = shipShape.getChild(playerShipParts.get("RightWing"));    
+    rightWing.setFill(secondaryFill); 
   }
   
   void drawDeath() {
     // Draws death animation
-    //for (int i = 0; i < 6; i++) {
-    //  explosionParticles.add(new Bullet(this.pos, new PVector(2, 2), 20, 20));
-    //}
     
     // Creates destroyed parts
     for (String name : playerShipParts.keySet()) {
@@ -120,14 +159,15 @@ class Player extends Character {
     // Jitter
     float jitter = (float) random(-5, 5);
     
+    
     // Draws characters
     push();
     translate(pos.x, pos.y);
     scale(scaleFactor);
-    
-    // Bounding radial
-    //ellipse(0, 0, 400, 400);
-        
+
+    // draw arc
+    displayArc();
+
     // Draws thrusters
     push();
     rotate(rotateFactor);
@@ -145,7 +185,17 @@ class Player extends Character {
     shape(shipShape);
     pop();
     
+    // Bounding radial
+    if (debug.active) {
+      fill(0, 255, 0);
+      ellipse(0, 0, charWidth, charWidth);
+    }
+    
+
     pop();
+    
+    
+    
   }
   
   boolean isAlive() {
@@ -153,12 +203,11 @@ class Player extends Character {
   }
   
   void checkHealth() {
-    // Checks health & changes colour depending on damage
+    // Checks health 
     if (health < 0) {
       
       if (isAlive()) {      
         deathTimer = deathAnimationTime;
-        //this.vel = new PVector(0, 0);
         screenShake = 100;
       }
     }
@@ -186,13 +235,23 @@ class Player extends Character {
         Enemy currEnemy = enemies.get(j);
         
         // Check if player states matches enemies
-        if (currEnemy.getState() == currBullet.getState()) {
-          if (dist(currBullet.pos.x, currBullet.pos.y, currEnemy.pos.x, currEnemy.pos.y) < currEnemy.charWidth) {
+       
+        if (dist(currBullet.pos.x, currBullet.pos.y, currEnemy.pos.x, currEnemy.pos.y) < currEnemy.charWidth) {
+          
+          // if same state => regular bullet power
+          if (currEnemy.getState() == currBullet.getState()) {
             currEnemy.decreaseHealth(bulletPower); 
             screenShakeTimer = 2;
-            currEnemy.pos.y -= 5;
-            currBullet.removeSelf();
+            currEnemy.pos.y -= 2.5;
           }
+          
+          // If not same state
+          if (currEnemy.getState() != currBullet.getState()) {
+            currEnemy.decreaseHealth(bulletPower * 2); 
+            screenShakeTimer = 2;
+            currEnemy.pos.y -= 5;
+          }        
+          currBullet.removeSelf();      
         }
       }  
     } 

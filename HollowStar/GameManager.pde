@@ -5,6 +5,8 @@ class GameManager {
   boolean moveLeft;
   boolean moveRight;
   
+  int lives = 3;
+  
   boolean holdFire;
   int bulletCoolDownStartTime;
   int bulletCoolDownTime = 125;
@@ -24,14 +26,23 @@ class GameManager {
   int enemyRespawnTime = 4_000;
   int enemyRespawnStartTime;
   
+  int waveStartTime;
+  int waveCounter;
+  int waveMaxTime = 5_000;
+  boolean waveOver;
+  
+  int waveNum = 0;
+  boolean bossSpawned = false;
+  
   PFont font;
 
   GameManager() {
-    // Constructor
+   
   }
   
   void initAssets() {
     /* Initializes game assets */
+    isActive = true;
     
     // Populates hashmaps
     initPartsMap();
@@ -39,22 +50,71 @@ class GameManager {
     // Loads font
     font = createFont("VCR_OSD_MONO_1.001.ttf", 128);
     
+    // Restart
+    restart();
+  }
+  
+  void restart() {
+    // Empties out all lists
+    players.clear();
+    stars.clear();
+    enemies.clear();
+    parts.clear();
+    
+    playerDeathTimer = -1;
+    screenShake = 3;
+    screenShakeTimer = 0;
+    screenJitter = 0;
+    bossSpawned = false;
+    enemyRespawnStartTime = millis();
+    
     // Initializes player & inits PShape group
     player = new Player(new PVector(width/2.25, height/1.5), new PVector(), 1, shipWidth, shipWidth, 0.2);
     
     // Adds player to array
     players.add(player);
     
+    // <--- WAVE CODE --->
+    resetWaveTime();
+    
     // Initializes enemies
     // Debug add elite enemy
-    enemies.add(new Enemy(new PVector(200, 0), new PVector(0, 0.5), 4, 120, 120, 0.5, "BLUE", true));
+    enemies.add(new Enemy(new PVector(200, 0), new PVector(0, 0.5), 4, 120, 120, 0.5, "BLUE", "ELITE"));
 
     // Creates initial fleet
     createFleet();
   }
   
-  void debug() {
-    respawnFleet();
+  void addBossEnemy() {
+    enemies.add(
+    new BossEnemy(new PVector(width/2, 0), new PVector(0, 0), 250, 120, 120, 0.5, 
+    "BLUE", "BOSS", "HOLLOW STAR"));
+  }
+  
+  void resetWaveTime() {
+    waveCounter = 0;
+    waveStartTime = millis();
+    waveOver = false;
+  }
+  
+  void updateWaveTime() {
+    if (waveCounter - waveStartTime < waveMaxTime){
+      waveCounter = millis();
+    }
+    else {
+      waveOver = true;
+    }
+    
+    // Fills timer bar
+    fill(244,3,3);
+    noStroke();
+    rect(20,100,map(waveCounter - waveStartTime, 0, waveMaxTime, 0, 200), 19);
+    if (!waveOver) {
+      text(waveCounter - waveStartTime + " " + int(waveMaxTime) +  " " + int (map(waveCounter - waveStartTime, 0, waveMaxTime, 0, 200)), 20, 160);
+    }
+    else {
+      text("WAVE OVER", 20, 160);
+    }
   }
   
   void createFleet() {
@@ -64,16 +124,16 @@ class GameManager {
     // Spawns in basic enemies horizontally
     for (int i = 0; i < xSpace + 1; i++) {
       String randomState = ((int) random(-1, 2) > 0) ? "BLUE" : "RED";
-      addNewEnemy(enemyWidth + (i * 150), 0, randomState);
+      addNewEnemy(new PVector(enemyWidth + (i * 150), 0), randomState);
     }
   }
-  
+   
   void respawnFleet() {
     // Check time passed
     int passedTime = millis() - enemyRespawnStartTime;
     
-    // Checks if fleet size less than 10
-    if (enemies.size() < 10) {
+    // Checks if fleet size less than 11
+    if (enemies.size() < 11) {
       // Respawns fleet if enough time passed
       if (passedTime> enemyRespawnTime) {
         createFleet();
@@ -84,33 +144,42 @@ class GameManager {
   
   void checkKeyPressed() {
     // Keeps track of arrow keys
-    if (key == CODED) {
-      if (keyCode == UP) {
-        moveUp = true;
+    if (player.isAlive()) {
+      if (key == CODED) {
+        if (keyCode == UP) {
+          moveUp = true;
+        }
+        if (keyCode == DOWN) {
+          moveDown = true;
+        }
+        if (keyCode == LEFT) {
+          moveLeft = true;
+          player.rotateFactor = -PI/8;
+        }
+        if (keyCode == RIGHT) {
+          moveRight = true;
+          player.rotateFactor = PI/8;
+        }
+        if (keyCode == SHIFT && player.switchCooldown == player.switchThreshold) {
+          player.switchState();
+        }
       }
-      if (keyCode == DOWN) {
-        moveDown = true;
-      }
-      if (keyCode == LEFT) {
-        moveLeft = true;
-        player.rotateFactor = -PI/8;
-      }
-      if (keyCode == RIGHT) {
-        moveRight = true;
-        player.rotateFactor = PI/8;
-      }
-      if (keyCode == SHIFT) {
-        player.switchState();
+      // Player bullets
+      if (key == ' ') {
+        holdFire = true;
       }
     }
-    // Player bullets
-    if (key == ' ') {
-      holdFire = true;
+    else {
+      holdFire = false;  // Stops firing if player is dead
     }
-    
     // Ends game
     if (key == ESC) {
       exit();
+    }
+    
+    if ((key == ENTER || key == RETURN) && gameOver) {  // Starts game
+        lives = 3;
+        restart();
     }
   }
   
@@ -157,7 +226,7 @@ class GameManager {
     }
     
     if (holdFire) {
-      if(bulletOffCoolDown()) {
+      if (bulletOffCoolDown()) {
         player.fireBullet();
       };
     }
@@ -172,10 +241,9 @@ class GameManager {
     stars.add(newStar);
   }
   
-  void addNewEnemy(int x, int y, String state) {
+  void addNewEnemy(PVector position, String state) {
     // Adds new enemy at a specific row location
-    PVector position = new PVector(x, y);
-    enemies.add(new Enemy(position, new PVector(0, 2), 2, enemyWidth - 45, enemyWidth - 45, enemyScale, state, false));
+    enemies.add(new Enemy(position, new PVector(0, 2), 4, enemyWidth - 45, enemyWidth - 45, enemyScale, state, "BASIC"));
   }
   
   
@@ -207,6 +275,7 @@ class GameManager {
       Bullet currPlayerBullet = player.playerBullets.get(i);
       
       currPlayerBullet.update();
+      currPlayerBullet.drawMe();
       
       // Removes bullets if offscreen
       if (currPlayerBullet.offScreen()) {
@@ -230,6 +299,7 @@ class GameManager {
       Star currStar = stars.get(i);
       
       currStar.update();
+      currStar.drawMe();
       
       // Removes stars if offscreen
       if (currStar.offScreen()) {
@@ -244,6 +314,7 @@ class GameManager {
       Enemy currEnemy = enemies.get(i);
       
       currEnemy.update();
+      currEnemy.drawMe();
       
       // Removes enemies if offscreen
       if (currEnemy.offScreen()) {
@@ -254,26 +325,19 @@ class GameManager {
   
   void updateParts() {
     for(int i = 0; i < parts.size(); i++) {
-      Part currPart = parts.get(i);
+      try {
+        Part currPart = parts.get(i);
       
-      currPart.update();
-      
-      // Removes part if off screen
-      if (currPart.offScreen()) {
-        parts.remove(i);
+        currPart.update();
+        currPart.drawMe();
+        
+        // Removes part if off screen
+        if (currPart.offScreen()) {
+          parts.remove(i);
+        }
       }
-    }
-  }
-  
-  void updateExplosionParticles() {
-    for(int i = 0; i < explosionParticles.size(); i++) {
-      Bullet currParticle = explosionParticles.get(i);
-      
-      currParticle.update();
-      
-      // Removes part if off screen
-      if (currParticle.offScreen()) {
-        explosionParticles.remove(i);
+      catch (Exception e) {
+        // -> Catches rare error when parts are removed too early
       }
     }
   }

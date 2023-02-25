@@ -9,6 +9,7 @@ class Bullet {
   int bulletHeight;
   color bulletOuterColour;
   color bulletInnerColour;
+  int colourWeight = 2;
   
   String state = "BLUE";
   color stateColour;
@@ -68,7 +69,7 @@ class Bullet {
     push();
     translate(pos.x, pos.y);
     rectMode(CENTER);
-    strokeWeight(2);
+    strokeWeight(colourWeight);
     fill(bulletInnerColour);
     stroke(bulletOuterColour);
     ellipse(0, 0, bulletWidth, bulletHeight);
