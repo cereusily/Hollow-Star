@@ -36,9 +36,7 @@ class GameManager {
   
   PFont font;
 
-  GameManager() {
-   
-  }
+  GameManager() {}
   
   void initAssets() {
     /* Initializes game assets */
@@ -378,11 +376,6 @@ class GameManager {
       
       currEnemy.update();
       currEnemy.drawMe();
-      
-      // Removes enemies if offscreen
-      if (currEnemy.offScreen()) {
-        enemies.remove(i);
-      }
     }
   }
   
@@ -401,7 +394,7 @@ class GameManager {
         }
       }
       catch (Exception e) {
-        // -> Catches rare error when parts are removed too early
+        // -> Catches rare NullPointerError when parts are removed few frames too early due to lag
       }
     }
   }

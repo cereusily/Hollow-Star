@@ -183,7 +183,7 @@ class BossEnemy extends Enemy {
         Player currPlayer = players.get(j);
         
         // If bullet is not same state as player
-        if (dist(currBullet.pos.x, currBullet.pos.y, currPlayer.pos.x, currPlayer.pos.y) < currPlayer.size.x/2) {
+        if (currBullet.hit(player)) {
           if (currBullet.getState() != currPlayer.getState()) {
             currPlayer.decreaseHealth(bulletPower); 
             screenShakeTimer = 2;

@@ -1,12 +1,11 @@
 class TaurusGun extends Gun {
   // Init fields
-  PVector size;
   
   TaurusGun(PVector pos, PVector vel, ArrayList<Bullet> bulletArr) {
     // Inits all attributes
     super(pos, vel, bulletArr);
     
-    size = new PVector(150, 170);
+    this.size = new PVector(150, 170);
     
     this.power = 30;
     

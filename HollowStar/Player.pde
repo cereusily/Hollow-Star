@@ -12,7 +12,6 @@ class Player extends Character {
   PShape shipShape;
   
   ArrayList<Bullet> playerBullets = new ArrayList<Bullet>();
-  int bulletPower = 1;
   
   color bulletOuterColour = color(0, 0, 255);
   color bulletInnerColour = color(255);
@@ -235,15 +234,14 @@ class Player extends Character {
         Enemy currEnemy = enemies.get(j);
         
         // Check if player states matches enemies
-        if (dist(currBullet.pos.x, currBullet.pos.y, currEnemy.pos.x, currEnemy.pos.y) < currEnemy.size.x) {
+        if (currBullet.hit(currEnemy)) {
           
           // if same state => regular bullet power
           if (currEnemy.getState() == currBullet.getState()) {
             currEnemy.decreaseHealth(currBullet.power); 
             screenShakeTimer = 2;
             currEnemy.pos.y -= 2.5;
-          }
-          
+          }   
           // If not same state
           if (currEnemy.getState() != currBullet.getState()) {
             currEnemy.decreaseHealth(currBullet.power * 2); 

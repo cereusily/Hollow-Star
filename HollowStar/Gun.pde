@@ -8,9 +8,6 @@ abstract class Gun {
   PVector vel;
   PVector size;
   
-  int bulletWidth;
-  int bulletLength;
-  
   ArrayList<Bullet> bulletArr;
   
   int power;
@@ -20,9 +17,9 @@ abstract class Gun {
     this.vel = vel;
     this.bulletArr = bulletArr;
     
-    // Default bullet size
+    // Default bullet size & power
     this.size = new PVector(15, 15);
-    
+    this.power = 1;
   }
 
   void shoot(ArrayList<Bullet> bulletArr) {

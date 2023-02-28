@@ -8,9 +8,7 @@ class Bullet {
   PVector size;
   
   int power;
-  
-  int bulletWidth;
-  int bulletHeight;
+
   color bulletOuterColour;
   color bulletInnerColour;
   int colourWeight = 2;
@@ -20,10 +18,10 @@ class Bullet {
   
   Bullet(PVector initPos, PVector initVel, PVector initSize) {
     pos = initPos;
-    vel = initVel;
-    
+    vel = initVel; 
     size = initSize;
     
+    // Sets inner colour of bullet
     bulletInnerColour = color(255);
   }
   
@@ -51,6 +49,10 @@ class Bullet {
   
   void setState(String newState) {
     this.state = newState;
+  }
+  
+  boolean hit(Character c) {
+    return (abs(pos.x - c.pos.x) < size.x/2 + c.size.x/2 && abs(pos.y - c.pos.y) < size.y/2 + c.size.x/2);
   }
   
   String getState() {

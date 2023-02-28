@@ -19,7 +19,7 @@ float screenJitter;
 int score;
 
 int playerDeathTimer = -1;
-int restartTime = 80;
+int restartTime = 130;
 
 boolean isActive;
 boolean gameOver;
