@@ -1,3 +1,5 @@
+
+
 class Part extends Bullet {
   // Class that manages parts
   PShape partShape;
@@ -11,7 +13,7 @@ class Part extends Bullet {
   
   Part(PVector pos, PVector vel, int charHeight, PShape partShape, float partScale, float rotateFactor, int removeTimer) {
     // Calls parent function
-    super(pos, vel, charHeight, charHeight);
+    super(pos, vel, new PVector(charHeight, charHeight));
     
     // Inits part shape
     this.partShape = partShape;
@@ -42,7 +44,7 @@ class Part extends Bullet {
   void drawMe() {
     // Draws self
     push();
-    translate(pos.x, pos.y + charHeight/4);
+    translate(pos.x, pos.y + size.y/4);
     rotate(rotateFactor);
     scale(partScale);
     shape(partShape);

@@ -4,7 +4,7 @@ class Star extends Bullet {
   Star(PVector initPos, PVector initVel) {
     
     // Inits from parent bullet class
-    super(initPos, initVel, 2, 2);
+    super(initPos, initVel, new PVector(2, 2));
   }
   
   void drawMe() {

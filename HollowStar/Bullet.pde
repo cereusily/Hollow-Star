@@ -1,10 +1,14 @@
+
+
 class Bullet {
   /* Class to manage bullets fired */
   
   PVector pos;
   PVector vel;
+  PVector size;
   
-  float bulletSpeed = 1.0;
+  int power;
+  
   int bulletWidth;
   int bulletHeight;
   color bulletOuterColour;
@@ -14,12 +18,11 @@ class Bullet {
   String state = "BLUE";
   color stateColour;
   
-  Bullet(PVector initPos, PVector initVel, int bWidth, int bHeight) {
+  Bullet(PVector initPos, PVector initVel, PVector initSize) {
     pos = initPos;
     vel = initVel;
-   
-    bulletWidth = bWidth;
-    bulletHeight = bHeight;
+    
+    size = initSize;
     
     bulletInnerColour = color(255);
   }
@@ -57,12 +60,12 @@ class Bullet {
   boolean offScreen() {
     /* Checks if bullet is offscreen */
     return 
-    ((pos.x < -bulletWidth/2) || (pos.x > width + bulletWidth/2) ||
-    (pos.y < -bulletHeight/2) || (pos.y > height + bulletHeight/2));
+    ((pos.x < -size.x/2) || (pos.x > width + size.x/2) ||
+    (pos.y < -size.y/2) || (pos.y > height + size.y/2));
   }
   
-  void removeSelf() {
-    player.playerBullets.remove(this);
+  void removeSelf(ArrayList<Bullet> bulletArr) {
+    bulletArr.remove(this);
   }
 
   void drawMe() {
@@ -72,7 +75,7 @@ class Bullet {
     strokeWeight(colourWeight);
     fill(bulletInnerColour);
     stroke(bulletOuterColour);
-    ellipse(0, 0, bulletWidth, bulletHeight);
+    ellipse(0, 0, size.x, size.y);
     pop();
   }
 }

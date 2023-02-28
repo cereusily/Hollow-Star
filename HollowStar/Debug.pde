@@ -10,11 +10,20 @@ class Debug {
     return getState();
   }
   
-  void drawDebug() {
-    //println(gameManager.waveOver);
+  void debugStats() {
+    text(str(frameRate), 20, 300);
+    
   }
   
-  void updateDebug() {
-    println(gameManager.lives);
+  void drawDebug() {
+    
+  }
+  
+  
+  void updateDebug() {    
+    if (active) {
+      debugStats();
+      drawDebug();
+    } 
   }
 }

@@ -28,7 +28,7 @@ class GameManager {
   
   int waveStartTime;
   int waveCounter;
-  int waveMaxTime = 5_000;
+  int waveMaxTime = 1_000;
   boolean waveOver;
   
   int waveNum = 0;
@@ -42,6 +42,8 @@ class GameManager {
   
   void initAssets() {
     /* Initializes game assets */
+    menuOn = true;
+    
     isActive = true;
     
     // Populates hashmaps
@@ -49,9 +51,6 @@ class GameManager {
     
     // Loads font
     font = createFont("VCR_OSD_MONO_1.001.ttf", 128);
-    
-    // Restart
-    restart();
   }
   
   void restart() {
@@ -69,7 +68,7 @@ class GameManager {
     enemyRespawnStartTime = millis();
     
     // Initializes player & inits PShape group
-    player = new Player(new PVector(width/2.25, height/1.5), new PVector(), 1, shipWidth, shipWidth, 0.2);
+    player = new Player(new PVector(width/2.25, height/1.5), new PVector(), 1, new PVector(shipWidth, shipWidth), 0.2);
     
     // Adds player to array
     players.add(player);
@@ -79,7 +78,7 @@ class GameManager {
     
     // Initializes enemies
     // Debug add elite enemy
-    enemies.add(new Enemy(new PVector(200, 0), new PVector(0, 0.5), 4, 120, 120, 0.5, "BLUE", "ELITE"));
+    enemies.add(new Enemy(new PVector(200, 0), new PVector(0, 0.5), 4, new PVector(120, 120), 0.5, "BLUE", "ELITE"));
 
     // Creates initial fleet
     createFleet();
@@ -87,7 +86,7 @@ class GameManager {
   
   void addBossEnemy() {
     enemies.add(
-    new BossEnemy(new PVector(width/2, 0), new PVector(0, 0), 250, 120, 120, 0.5, 
+    new BossEnemy(new PVector(width/2, 0), new PVector(0, 0), 250, new PVector(120, 120), 0.5, 
     "BLUE", "BOSS", "HOLLOW STAR"));
   }
   
@@ -98,6 +97,7 @@ class GameManager {
   }
   
   void updateWaveTime() {
+    textSize(32);
     if (waveCounter - waveStartTime < waveMaxTime){
       waveCounter = millis();
     }
@@ -142,44 +142,114 @@ class GameManager {
     }
   }
   
-  void checkKeyPressed() {
-    // Keeps track of arrow keys
-    if (player.isAlive()) {
-      if (key == CODED) {
-        if (keyCode == UP) {
-          moveUp = true;
-        }
-        if (keyCode == DOWN) {
-          moveDown = true;
-        }
-        if (keyCode == LEFT) {
-          moveLeft = true;
-          player.rotateFactor = -PI/8;
-        }
-        if (keyCode == RIGHT) {
-          moveRight = true;
-          player.rotateFactor = PI/8;
-        }
-        if (keyCode == SHIFT && player.switchCooldown == player.switchThreshold) {
-          player.switchState();
-        }
-      }
-      // Player bullets
-      if (key == ' ') {
-        holdFire = true;
-      }
+  void displayUltMeter() {
+    // Displays player's ultimate meter
+    if (player.canUseUlt()) {
+      textAlign(CENTER);
+      fill(255);
+      text("FULL", 130, 700);
+      fill(153,50,204);
     }
     else {
-      holdFire = false;  // Stops firing if player is dead
+      fill(player.stateColour);
     }
-    // Ends game
-    if (key == ESC) {
-      exit();
-    }
+    // Ult bar
+    rect(30, 700, map(player.ultimateMeter, 0, player.ultimateMaxMeter, 0, 200), 20, 28);
     
-    if ((key == ENTER || key == RETURN) && gameOver) {  // Starts game
-        lives = 3;
-        restart();
+    // Ult backgrouund bar
+    noFill();
+    strokeWeight(4);
+    stroke(255);
+    rect(30, 700, 200, 20, 28);
+    
+    textAlign(LEFT);
+  }
+  
+  void displayGameOver() {
+    // Displays gameover
+    
+    textAlign(CENTER);
+    textSize(42);
+    fill(red);
+    text("GAME OVER", width/2, 400);
+    textSize(12);
+    text("< PRESS ENTER/RETURN TO CONTINUE >", width/2, 450);
+    textAlign(LEFT);
+    gameOver = true;
+  }
+  
+  void displayMenu() {
+    // Displays main menu
+    textFont(font);
+    textAlign(CENTER);
+    fill(255);
+    textSize(120);
+    text("HOLLOW STAR", width/2, 400);
+    textSize(30);
+    text("< PRESS ENTER/RETURN TO START >", width/2, 470);
+    textSize(20);
+    text("< PRESS ESC TO QUIT >", width/2, 500);
+    textAlign(LEFT);
+  }
+  
+  void checkKeyPressed() {
+    // Keeps track of arrow keys
+    
+    // Checks for menu
+    if (menuOn) {
+      if (key == ENTER || key == RETURN) {
+        menuOn = false;
+        isActive = true;
+      }
+    }
+    // Regular checks
+    else {
+      if (player.isAlive()) {
+        if (key == CODED) {
+          if (keyCode == UP) {
+            moveUp = true;
+          }
+          if (keyCode == DOWN) {
+            moveDown = true;
+          }
+          if (keyCode == LEFT) {
+            moveLeft = true;
+            player.rotateFactor = -PI/8;
+          }
+          if (keyCode == RIGHT) {
+            moveRight = true;
+            player.rotateFactor = PI/8;
+          }
+          if (keyCode == SHIFT && player.switchCooldown == player.switchThreshold) {
+            player.switchState();
+          }
+        }
+        // Player bullets
+        if (key == ' ') {
+          holdFire = true;
+        }
+        
+        // Ult shot
+        if (key == 'x' && player.canUseUlt()) {
+          player.fireUlt();
+        }
+      }
+      else {
+        holdFire = false;  // Stops firing if player is dead
+      }
+      // Ends game
+      if (key == ESC) {
+        // resets key
+        key = 0;
+        menuOn = true;
+        isActive = false;
+      }
+      // Resets game if enter / return is entered
+      if ((key == ENTER || key == RETURN) && gameOver) {  // Starts game
+          lives = 3;
+          score = 0;
+          restart();
+      }
     }
   }
   
@@ -193,12 +263,16 @@ class GameManager {
         moveDown = false;
       }
       if (keyCode == LEFT) {
-        moveLeft = false;
-        player.rotateFactor = 0;
+        moveLeft = false;  // nullpointer when no player in playerarray   
+        if (gameStart) {  // Only resets rotation when player is in game => else nullpointer
+          player.rotateFactor = 0;
+        } 
       }
       if (keyCode == RIGHT) {
         moveRight = false;
-        player.rotateFactor = 0;
+        if (gameStart) {
+          player.rotateFactor = 0;
+        } 
       }
     }
     // Player bullets
@@ -225,10 +299,9 @@ class GameManager {
       player.accelerate(leftAcc);
     }
     
-    if (holdFire) {
-      if (bulletOffCoolDown()) {
-        player.fireBullet();
-      };
+    if (holdFire && player.isAlive()) {
+      player.fire();
+      player.playerGun.recharge();
     }
   }
   
@@ -243,7 +316,7 @@ class GameManager {
   
   void addNewEnemy(PVector position, String state) {
     // Adds new enemy at a specific row location
-    enemies.add(new Enemy(position, new PVector(0, 2), 4, enemyWidth - 45, enemyWidth - 45, enemyScale, state, "BASIC"));
+    enemies.add(new Enemy(position, new PVector(0, 2), 4, new PVector(enemyWidth - 45, enemyWidth - 45), enemyScale, state, "BASIC"));
   }
   
   
@@ -258,16 +331,6 @@ class GameManager {
     return false;
   }
   
-  boolean bulletOffCoolDown() {
-    /* Checks bullet cool down time */
-    int passedCoolDownTime = millis() - bulletCoolDownStartTime;
-    
-    if (passedCoolDownTime > bulletCoolDownTime) {
-      bulletCoolDownStartTime = millis();
-      return true;
-    }
-    return false;
-  }
   
   void updatePlayerBullets() {
     // Updates player bullets
@@ -324,6 +387,7 @@ class GameManager {
   }
   
   void updateParts() {
+    // Updates part sprites
     for(int i = 0; i < parts.size(); i++) {
       try {
         Part currPart = parts.get(i);

@@ -18,9 +18,9 @@ class Enemy extends Character {
   
   
   
-  Enemy(PVector pos, PVector vel, int health, int charWidth, int charHeight, float scaleFactor, String state, String enemyType) {
+  Enemy(PVector pos, PVector vel, int health, PVector size, float scaleFactor, String state, String enemyType) {
     // Inits fields
-    super(pos, vel, health, charWidth, charHeight, scaleFactor);
+    super(pos, vel, health, size, scaleFactor);
     
     this.state = state;
     this.enemyType = enemyType;
@@ -70,6 +70,7 @@ class Enemy extends Character {
     if (deathTimer == 0) {
       drawDeath();
       score += this.points;
+      player.addToUlt();
       enemies.remove(this);
     }
     
@@ -89,11 +90,11 @@ class Enemy extends Character {
    // Bounding radial
    if (debug.active) {
      fill(enemyColour);
-     ellipse(0, 0, charWidth, charHeight);
+     ellipse(0, 0, size.x, size.y);
    }
   
     push();
-    translate(-charWidth + charWidth/6, -charHeight + charHeight/10);
+    translate(-size.x + size.x/6, -size.y + size.y/10);
     scale(scaleFactor);
     shape(shipShape);  
     pop();
@@ -139,8 +140,8 @@ class Enemy extends Character {
   boolean offScreen() {
     /* Checks if enemy is offscreen */
     return 
-    ((pos.x < -charWidth/2) || (pos.x > width + charWidth/2) ||
-    (pos.y < -charWidth/2) || (pos.y > height + charWidth/2));
+    ((pos.x < -size.x/2) || (pos.x > width + size.x/2) ||
+    (pos.y < -size.y/2) || (pos.y > height + size.y/2));
   }
   
   void drawDeath() {    
@@ -158,7 +159,7 @@ class Enemy extends Character {
     tempPos = this.pos.copy();
     
     PShape brokenPart = shipShape.getChild(enemyShipParts.get(partName));
-    parts.add(new Part(tempPos, new PVector(x, y), 80, brokenPart, this.scaleFactor  * 0.5, PI/20, 100));
+    parts.add(new Part(tempPos, new PVector(x, y), 80, brokenPart, this.scaleFactor * 0.5, PI/20, 100));
   }
   
   void initShipColour() {

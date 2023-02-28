@@ -1,3 +1,5 @@
+
+
 class BossEnemy extends Enemy {
   // Fields for boss enemy
   
@@ -9,8 +11,8 @@ class BossEnemy extends Enemy {
   int maxHealth;
   String name;
   
-  BossEnemy(PVector pos, PVector vel, int health, int charWidth, int charHeight, float scaleFactor, String state, String enemyType, String name) {
-    super(pos, vel, health, charWidth, charHeight, scaleFactor, state, enemyType);
+  BossEnemy(PVector pos, PVector vel, int health, PVector size, float scaleFactor, String state, String enemyType, String name) {
+    super(pos, vel, health, size, scaleFactor, state, enemyType);
     
     // Overrides fields
     this.points = 1000;
@@ -164,7 +166,7 @@ class BossEnemy extends Enemy {
     
     PVector tempPos = this.pos.copy();
     
-    Bullet newBullet = new Bullet(tempPos, new PVector(randomX, randomY), 15, 15);
+    Bullet newBullet = new Bullet(tempPos, new PVector(randomX, randomY), new PVector(30, 30));
     newBullet.colourWeight = 5;
     newBullet.setState(this.getState());
     
@@ -181,12 +183,16 @@ class BossEnemy extends Enemy {
         Player currPlayer = players.get(j);
         
         // If bullet is not same state as player
-        if (currBullet.getState() != currPlayer.getState()) {
-          if (dist(currBullet.pos.x, currBullet.pos.y, currPlayer.pos.x, currPlayer.pos.y) < currPlayer.charWidth/2) {
+        if (dist(currBullet.pos.x, currBullet.pos.y, currPlayer.pos.x, currPlayer.pos.y) < currPlayer.size.x/2) {
+          if (currBullet.getState() != currPlayer.getState()) {
             currPlayer.decreaseHealth(bulletPower); 
             screenShakeTimer = 2;
-            currBullet.removeSelf();
           }
+          // If state is same as player
+          if (currBullet.getState() == currPlayer.getState()) {
+            player.addToUlt();
+          }
+          currBullet.removeSelf(bossBullets);
         }
       }
     }

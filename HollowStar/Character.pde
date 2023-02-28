@@ -1,7 +1,10 @@
+
+
 class Character {
   
   PVector pos;
   PVector vel;
+  PVector size;
   
   int health;
   int charWidth;
@@ -11,12 +14,11 @@ class Character {
   float rotateFactor;
   
   // Inits character
-  Character(PVector pos, PVector vel, int health, int charWidth, int charHeight, float scaleFactor) {
+  Character(PVector pos, PVector vel, int health, PVector size, float scaleFactor) {
     this.pos = pos;
     this.vel = vel;
     this.health = health;
-    this.charWidth = charWidth;
-    this.charHeight = charHeight;
+    this.size = size;
     this.scaleFactor = scaleFactor;
   }
   
@@ -46,17 +48,17 @@ class Character {
   
   void checkCollide() {
     // handles collisions
-    if (pos.x < -charWidth/2) pos.x = width + charWidth/2;
-    if (pos.x > width + charWidth/2) pos.x = -charWidth/2;
-    if (pos.y < -charWidth/2) pos.y = height + charWidth/2;
-    if (pos.y > height + charWidth/2) pos.y = -charWidth/2;
+    if (pos.x < -size.x/2) pos.x = width + size.x/2;
+    if (pos.x > width + size.x/2) pos.x = -size.x/2;
+    if (pos.y < -size.y/2) pos.y = height + size.y/2;
+    if (pos.y > height + size.y/2) pos.y = -size.y/2;
   }
   
   boolean hitCharacter(Character other) {
     // Checks if character got hit
     boolean hit = false;
     
-    if (dist(this.pos.x, this.pos.y, other.pos.x, other.pos.y) < this.charWidth/2) {
+    if (dist(this.pos.x, this.pos.y, other.pos.x, other.pos.y) < this.size.x/2) {
       hit = true;
     }
     return hit;

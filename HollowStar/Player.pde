@@ -16,8 +16,9 @@ class Player extends Character {
   
   color bulletOuterColour = color(0, 0, 255);
   color bulletInnerColour = color(255);
-  int bulletCooldown;
-  int bulletThreshold = 100;
+  
+  PiscesGun playerGun;
+  TaurusGun playerUlt;
   
   int switchCooldown;
   int switchThreshold = 20;
@@ -29,16 +30,25 @@ class Player extends Character {
   String state = "BLUE";
   color stateColour = blue;
   
+  int ultimateMeter;
+  int ultimateMaxMeter = 20;
   
-  Player(PVector pos, PVector vel, int health, int charWidth, int charHeight, float scaleFactor) {
+  
+  Player(PVector pos, PVector vel, int health, PVector size, float scaleFactor) {
     // Calls parent super init function
-    super(pos, vel, health, charWidth, charHeight, scaleFactor);
+    super(pos, vel, health, size, scaleFactor);
     
     // Creates PShape group to house drawings
     shipShape = createShape(GROUP);
     
     // Init ship shape
     initShipShape();
+    
+    // Init pisces gun
+    playerGun = new PiscesGun(this.pos, new PVector(0, -10), playerBullets);
+    
+    // Init ult gun
+    playerUlt = new TaurusGun(this.pos, new PVector(0, -20), playerBullets); 
   }
   
   void update() {
@@ -62,8 +72,7 @@ class Player extends Character {
     // Death timer
     if (deathTimer > 0) {
       deathTimer--;
-    }
-    
+    }  
     if (deathTimer == 0) {
       drawDeath();
       players.remove(this);
@@ -71,32 +80,32 @@ class Player extends Character {
 
     // Check color state => Refactor to game manager later
     updateShipColour();
-    
-  }
-  
-  void displayBar() {
-    // Displays gun bar
-    stroke(255);
-    strokeWeight(2);
-    fill(255, 0, 0);
-    rect(200, 100, 100, 20);
-    strokeWeight(0);
-    
-    fill(0, 255, 0);
-    rect(200, 100, map(bulletCooldown, 0, bulletThreshold, 0, 100), 20);
-    
   }
   
   void displayArc() {
-    // Displays gun arc
+    // Displays switch arc
     float angle = map(switchCooldown, 0, switchThreshold, 0, TWO_PI);
     fill(this.stateColour);
     arc(0, 0, 500, 500, 0, angle);
     fill(0);
     ellipse(0, 0, 440, 440);
   }
-
   
+  boolean canUseUlt() {
+    return (this.ultimateMeter == this.ultimateMaxMeter);
+  }
+  
+  void addToUlt() {
+    if (ultimateMeter < ultimateMaxMeter) {
+      ultimateMeter++;
+    }
+  }
+  
+  void fireUlt() {
+    playerUlt.shoot(this.state);
+    ultimateMeter = 0;
+  }
+
   void switchState() {
     // Swaps states
     this.switchCooldown = 0;
@@ -126,6 +135,7 @@ class Player extends Character {
     PShape mainBody = shipShape.getChild(playerShipParts.get("MainBody"));    
     mainBody.setFill(stateColour); 
     
+    // Updates secondary parts
     color secondaryFill = (state == "BLUE" ? blueGray : orange);
     
     PShape leftWing = shipShape.getChild(playerShipParts.get("LeftWing"));    
@@ -148,9 +158,11 @@ class Player extends Character {
     float x = (float) random(-2, 2);
     float y = (float) random(-1, -2);
     
+    // Copies player position vector
     PVector tempPos = new PVector();
     tempPos = this.pos.copy();
     
+    // Creates broken parts at copied vector
     PShape brokenPart = shipShape.getChild(playerShipParts.get(partName));
     parts.add(new Part(tempPos, new PVector(x, y), 160, brokenPart, this.scaleFactor, PI/20, 1000));
   }
@@ -158,8 +170,7 @@ class Player extends Character {
   void drawMe() {
     // Jitter
     float jitter = (float) random(-5, 5);
-    
-    
+      
     // Draws characters
     push();
     translate(pos.x, pos.y);
@@ -181,21 +192,16 @@ class Player extends Character {
     push();
     shapeMode(CENTER);
     rotate(rotateFactor);
-    translate(-charWidth * 1.95, -charHeight * 1.95);
+    translate(-size.x * 1.95, -size.y * 1.95);
     shape(shipShape);
     pop();
     
     // Bounding radial
     if (debug.active) {
       fill(0, 255, 0);
-      ellipse(0, 0, charWidth, charWidth);
+      ellipse(0, 0, size.x, size.y);
     }
-    
-
     pop();
-    
-    
-    
   }
   
   boolean isAlive() {
@@ -203,9 +209,10 @@ class Player extends Character {
   }
   
   void checkHealth() {
-    // Checks health 
+    // Checks if player is dead 
     if (health < 0) {
       
+      // Sets animations
       if (isAlive()) {      
         deathTimer = deathAnimationTime;
         screenShake = 100;
@@ -213,17 +220,10 @@ class Player extends Character {
     }
   }
   
-  void fireBullet() {
-    /* Creates new bullet and adds to playerBullet list */ // -> +/-35 for outer guns
-    Bullet newBulletLeft = new Bullet(new PVector(pos.x - 22, pos.y), new PVector(0, -10), 10, 30);
-    Bullet newBulletRight = new Bullet(new PVector(pos.x + 22, pos.y), new PVector(0, -10), 10, 30);
-    
-    newBulletLeft.setState(this.getState());
-    newBulletRight.setState(this.getState());
-    
-    playerBullets.add(newBulletLeft);
-    playerBullets.add(newBulletRight);
+  void fire() {
+    playerGun.shoot(this.getState());
   }
+
   
   void checkProjectiles() {
     /* Checks if projectile hit something */
@@ -235,29 +235,26 @@ class Player extends Character {
         Enemy currEnemy = enemies.get(j);
         
         // Check if player states matches enemies
-       
-        if (dist(currBullet.pos.x, currBullet.pos.y, currEnemy.pos.x, currEnemy.pos.y) < currEnemy.charWidth) {
+        if (dist(currBullet.pos.x, currBullet.pos.y, currEnemy.pos.x, currEnemy.pos.y) < currEnemy.size.x) {
           
           // if same state => regular bullet power
           if (currEnemy.getState() == currBullet.getState()) {
-            currEnemy.decreaseHealth(bulletPower); 
+            currEnemy.decreaseHealth(currBullet.power); 
             screenShakeTimer = 2;
             currEnemy.pos.y -= 2.5;
           }
           
           // If not same state
           if (currEnemy.getState() != currBullet.getState()) {
-            currEnemy.decreaseHealth(bulletPower * 2); 
-            screenShakeTimer = 2;
+            currEnemy.decreaseHealth(currBullet.power * 2); 
+            screenShakeTimer = 3;
             currEnemy.pos.y -= 5;
           }        
-          currBullet.removeSelf();      
+          currBullet.removeSelf(playerBullets);      
         }
       }  
     } 
   }
-  
-  
   
   void initShipShape() {
     // Populates shipShape group with drawing shapes

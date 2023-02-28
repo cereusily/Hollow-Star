@@ -23,6 +23,9 @@ int restartTime = 80;
 
 boolean isActive;
 boolean gameOver;
+boolean gameStart = false;
+
+boolean menuOn;
 
 ArrayList<Player> players = new ArrayList<Player>();
 ArrayList<Star> stars = new ArrayList<Star>();
@@ -34,7 +37,8 @@ GameManager gameManager = new GameManager();
 HashMap<String, Integer> playerShipParts = new HashMap<String, Integer>();
 HashMap<String, Integer> enemyShipParts = new HashMap<String, Integer>();
 
-Debug debug = new Debug(false);
+// Debug tool
+Debug debug = new Debug(true);
 
 
 void displayText() {
@@ -53,15 +57,27 @@ void setup() {
   
   // Init assest from GameManager;
   gameManager.initAssets();
-  
 }
 
 void draw() {
+  // Displays menu and runs game once menu is closed
+  if (menuOn) {
+    gameManager.displayMenu();
+  }
+  else if (!gameStart) {
+    gameManager.restart();
+    gameStart = true;
+  }
+  else {
+    runGame();
+  }
+}
+
+void runGame() {
   /* Runs main game loop */
-  
   if (isActive) {
     push();
-  
+
     // Clears screen
     background(0);
     
@@ -102,7 +118,6 @@ void draw() {
       // Player is dead; game over
       if (gameManager.lives > 0) {  // => if have lives, respawn
         // => reset game
-        //gameManager.lives -= 1;
         
         if (playerDeathTimer == -1) {
           playerDeathTimer = restartTime;
@@ -119,12 +134,7 @@ void draw() {
       }
       else {
         // => displays game over
-        textAlign(CENTER);
-        text("GAME OVER", width/2, 400);
-        textSize(12);
-        text("< PRESS ENTER/RETURN TO CONTINUE >", width/2, 450);
-        textAlign(LEFT);
-        gameOver = true;
+        gameManager.displayGameOver();
       } 
     }
     
@@ -136,12 +146,11 @@ void draw() {
     
     // Updates screen with changes
     updateScreen();
-    
-    // Debug
-    debug.drawDebug();
   
     pop();
   }
+  // Debug
+  debug.updateDebug();
 }
 
 // Stores states for keys
@@ -160,18 +169,18 @@ void updateScreen() {
   if (gameManager.starOffCoolDown()) {
     gameManager.addStar();
   };
-    
-  // Update player sprites
-  if (player.isAlive()) {
-    player.drawMe();
-  }
   
   // Updates wave time
   gameManager.updateWaveTime();
   
-    // display text
+   // Update player sprites
+  if (player.isAlive()) {
+    player.drawMe();
+  }
+  
+  // display text
   displayText();
   
-  // Debug
-  debug.updateDebug();
+  // Displays ul meter
+  gameManager.displayUltMeter();
 }
