@@ -16,6 +16,7 @@ class Player extends Character {
   color bulletOuterColour = color(0, 0, 255);
   color bulletInnerColour = color(255);
   
+  // Player guns
   PiscesGun playerGun;
   TaurusGun playerUlt;
   
@@ -81,13 +82,24 @@ class Player extends Character {
     updateShipColour();
   }
   
-  void displayArc() {
-    // Displays switch arc
-    float angle = map(switchCooldown, 0, switchThreshold, 0, TWO_PI);
-    fill(this.stateColour);
-    arc(0, 0, 500, 500, 0, angle);
-    fill(0);
-    ellipse(0, 0, 440, 440);
+  boolean isAlive() {
+    return deathTimer == -1;
+  }
+  
+  void checkHealth() {
+    // Checks if player is dead 
+    if (health < 0) {
+      
+      // Sets animations
+      if (isAlive()) {      
+        deathTimer = deathAnimationTime;
+        screenShake = 100;
+      }
+    }
+  }
+  
+  void fire() {
+    playerGun.shoot(this.getState());
   }
   
   boolean canUseUlt() {
@@ -105,6 +117,43 @@ class Player extends Character {
     ultimateMeter = 0;
   }
 
+  void checkProjectiles() {
+    /* Checks if projectile hit something */
+    for (int i = 0; i < playerBullets.size(); i++) {
+      Bullet currBullet = playerBullets.get(i);
+      
+      // Regular enemies
+      for (int j = 0; j < enemies.size(); j++) {
+        Enemy currEnemy = enemies.get(j);
+        
+        // Check if player states matches enemies
+        if (currBullet.hit(currEnemy)) {
+          
+          // if same state => regular bullet power
+          if (currEnemy.getState() == currBullet.getState()) {
+            currEnemy.decreaseHealth(currBullet.power); 
+            screenShakeTimer = 2;
+            currEnemy.pos.y -= 2.5;
+          }   
+          // If not same state
+          if (currEnemy.getState() != currBullet.getState()) {
+            currEnemy.decreaseHealth(currBullet.power * 2); 
+            screenShakeTimer = 3;
+            currEnemy.pos.y -= 5;
+          }
+          
+          // Subtracts durability
+          currBullet.durability--;
+          
+          // Removes self if no more durability
+          if (!currBullet.hasDurability()) {
+            currBullet.removeSelf(playerBullets); 
+          }            
+        }
+      }  
+    } 
+  }
+  
   void switchState() {
     // Swaps states
     this.switchCooldown = 0;
@@ -143,15 +192,6 @@ class Player extends Character {
     rightWing.setFill(secondaryFill); 
   }
   
-  void drawDeath() {
-    // Draws death animation
-    
-    // Creates destroyed parts
-    for (String name : playerShipParts.keySet()) {
-      breakPart(name);
-    }
-  }
-  
   void breakPart(String partName) {
     // breaks specific part
     float x = (float) random(-2, 2);
@@ -159,11 +199,30 @@ class Player extends Character {
     
     // Copies player position vector
     PVector tempPos = new PVector();
-    tempPos = this.pos.copy();
+    
+    // Copies last bullet hit or else last death coords
+    if (lastHitBullet.size() > 0) {
+      tempPos = lastHitBullet.get(0).pos.copy();
+    }
+    else if (lastHitEnemy.size() > 0) {
+      tempPos = lastHitEnemy.get(0).pos.copy();
+    }
+    else {
+      tempPos = this.pos.copy();
+    }
     
     // Creates broken parts at copied vector
     PShape brokenPart = shipShape.getChild(playerShipParts.get(partName));
     parts.add(new Part(tempPos, new PVector(x, y), 160, brokenPart, this.scaleFactor, PI/20, 1000));
+  }
+  
+  void displayArc() {
+    // Displays switch arc
+    float angle = map(switchCooldown, 0, switchThreshold, 0, TWO_PI);
+    fill(this.stateColour);
+    arc(0, 0, 500, 500, 0, angle);
+    fill(0);
+    ellipse(0, 0, 440, 440);
   }
   
   void drawMe() {
@@ -195,63 +254,24 @@ class Player extends Character {
     shape(shipShape);
     pop();
     
+    push();
+    scale(1);
     // Bounding radial
     if (debug.active) {
       fill(0, 255, 0);
       ellipse(0, 0, size.x, size.y);
     }
     pop();
-  }
+    pop();
+  }  
   
-  boolean isAlive() {
-    return deathTimer == -1;
-  }
-  
-  void checkHealth() {
-    // Checks if player is dead 
-    if (health < 0) {
-      
-      // Sets animations
-      if (isAlive()) {      
-        deathTimer = deathAnimationTime;
-        screenShake = 100;
-      }
+  void drawDeath() {
+    // Draws death animation
+    
+    // Creates destroyed parts
+    for (String name : playerShipParts.keySet()) {
+      breakPart(name);
     }
-  }
-  
-  void fire() {
-    playerGun.shoot(this.getState());
-  }
-
-  
-  void checkProjectiles() {
-    /* Checks if projectile hit something */
-    for (int i = 0; i < playerBullets.size(); i++) {
-      Bullet currBullet = playerBullets.get(i);
-      
-      // Regular enemies
-      for (int j = 0; j < enemies.size(); j++) {
-        Enemy currEnemy = enemies.get(j);
-        
-        // Check if player states matches enemies
-        if (currBullet.hit(currEnemy)) {
-          
-          // if same state => regular bullet power
-          if (currEnemy.getState() == currBullet.getState()) {
-            currEnemy.decreaseHealth(currBullet.power); 
-            screenShakeTimer = 2;
-            currEnemy.pos.y -= 2.5;
-          }   
-          // If not same state
-          if (currEnemy.getState() != currBullet.getState()) {
-            currEnemy.decreaseHealth(currBullet.power * 2); 
-            screenShakeTimer = 3;
-            currEnemy.pos.y -= 5;
-          }        
-          currBullet.removeSelf(playerBullets);      
-        }
-      }  
-    } 
   }
   
   void initShipShape() {

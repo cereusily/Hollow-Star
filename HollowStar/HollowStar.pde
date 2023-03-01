@@ -19,7 +19,10 @@ float screenJitter;
 int score;
 
 int playerDeathTimer = -1;
-int restartTime = 130;
+int restartTime = 150;
+
+int snappedMenuTime;
+int endMenuTime;
 
 boolean isActive;
 boolean gameOver;
@@ -31,6 +34,8 @@ ArrayList<Player> players = new ArrayList<Player>();
 ArrayList<Star> stars = new ArrayList<Star>();
 ArrayList<Enemy> enemies = new ArrayList<Enemy>();
 ArrayList<Part> parts = new ArrayList<Part>();
+ArrayList<Bullet> lastHitBullet = new ArrayList<Bullet>();
+ArrayList<Enemy> lastHitEnemy = new ArrayList<Enemy>();
 
 GameManager gameManager = new GameManager();
 
@@ -38,7 +43,7 @@ HashMap<String, Integer> playerShipParts = new HashMap<String, Integer>();
 HashMap<String, Integer> enemyShipParts = new HashMap<String, Integer>();
 
 // Debug tool
-Debug debug = new Debug(true);
+Debug debug = new Debug(false);
 
 
 void displayText() {
@@ -119,6 +124,9 @@ void runGame() {
       if (gameManager.lives > 0) {  // => if have lives, respawn
         // => reset game
         
+        // Draws the last bullet hit
+        gameManager.drawLastHit();
+        
         if (playerDeathTimer == -1) {
           playerDeathTimer = restartTime;
         }
@@ -144,8 +152,11 @@ void runGame() {
     // Updates player bullets state
     gameManager.updatePlayerBullets();
     
+    // Updates wave time
+    gameManager.updateWaveTime();
+    
     // Updates screen with changes
-    updateScreen();
+    updateScreen(); 
   
     pop();
   }
@@ -169,9 +180,6 @@ void updateScreen() {
   if (gameManager.starOffCoolDown()) {
     gameManager.addStar();
   };
-  
-  // Updates wave time
-  gameManager.updateWaveTime();
   
    // Update player sprites
   if (player.isAlive()) {

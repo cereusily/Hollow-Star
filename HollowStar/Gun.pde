@@ -22,11 +22,12 @@ abstract class Gun {
     this.power = 1;
   }
 
-  void shoot(ArrayList<Bullet> bulletArr) {
+  void shoot(String state) {
     // Shoots bullet is cooldown is off
     if (cooldown == threshold) {
       Bullet newBullet = new Bullet(this.pos, this.vel, this.size);
       newBullet.power = this.power;
+      newBullet.setState(state);
       bulletArr.add(newBullet);
     }
   }

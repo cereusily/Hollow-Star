@@ -8,6 +8,7 @@ class Bullet {
   PVector size;
   
   int power;
+  int durability = 1;
 
   color bulletOuterColour;
   color bulletInnerColour;
@@ -64,6 +65,10 @@ class Bullet {
     return 
     ((pos.x < -size.x/2) || (pos.x > width + size.x/2) ||
     (pos.y < -size.y/2) || (pos.y > height + size.y/2));
+  }
+  
+  boolean hasDurability() {
+    return durability > 0;
   }
   
   void removeSelf(ArrayList<Bullet> bulletArr) {

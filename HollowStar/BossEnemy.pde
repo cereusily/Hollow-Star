@@ -6,7 +6,10 @@ class BossEnemy extends Enemy {
   ArrayList<Bullet> bossBullets = new ArrayList<Bullet>();
   
   int switchCooldown;
-  int switchThreshold = 300;
+  int switchThreshold = 150;
+  
+  AquariusGun bossGun;
+  
   int bulletPower = 1;
   int maxHealth;
   String name;
@@ -22,6 +25,9 @@ class BossEnemy extends Enemy {
     
     // Sets name
     this.name = name;
+    
+    // Sets gun
+    bossGun = new AquariusGun(this.pos, new PVector(5, 5), bossBullets);
     
     // Sets colour
     PShape mainBody = shipShape.getChild(enemyShipParts.get("MainBody"));
@@ -49,8 +55,11 @@ class BossEnemy extends Enemy {
     rightOuterFlap.setFill(255);
     
     // Minions :D
-    gameManager.addNewEnemy(new PVector(200, 0), "BLUE");
-    gameManager.addNewEnemy(new PVector(width - 200, 0), "RED");
+    gameManager.addNewEnemy(new PVector(200, 0), new PVector(0, 4), "BLUE");
+    gameManager.addNewEnemy(new PVector(width - 200, 0), new PVector(0, 4), "RED");
+    
+    // Indicates end of wave
+    gameManager.waveNum += 1;
   } 
   
   void update() {
@@ -85,8 +94,12 @@ class BossEnemy extends Enemy {
       this.vel.y = 0;
     }
     
-    fireBullets();
+    // Shoots gun
+    bossGun.shoot(this.getState());
     updateBullets();
+    
+    // Recharges gun
+    bossGun.recharge();
     
     if (!super.isAlive()) {
       gameManager.bossSpawned = false;
@@ -187,12 +200,20 @@ class BossEnemy extends Enemy {
           if (currBullet.getState() != currPlayer.getState()) {
             currPlayer.decreaseHealth(bulletPower); 
             screenShakeTimer = 2;
+            currBullet.vel = new PVector(0, 0); // Zeroes out last hit for freeze effect
+            lastHitBullet.add(currBullet);
           }
           // If state is same as player
           if (currBullet.getState() == currPlayer.getState()) {
-            player.addToUlt();
+            player.addToUlt();  // If bullet is same state as player, player absorbs & gains ult points
           }
-          currBullet.removeSelf(bossBullets);
+          
+          // Subtracts durability;
+          currBullet.durability--;
+          
+          if (!currBullet.hasDurability()) {
+            currBullet.removeSelf(bossBullets);  // Removes bullet from array if no more durability
+          }
         }
       }
     }
