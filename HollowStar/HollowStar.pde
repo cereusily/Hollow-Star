@@ -21,14 +21,14 @@ int score;
 int playerDeathTimer = -1;
 int restartTime = 150;
 
-int snappedMenuTime;
-int endMenuTime;
 
 boolean isActive;
 boolean gameOver;
 boolean gameStart = false;
+boolean bossDead = false;
 
 boolean menuOn;
+boolean howToOn;
 
 ArrayList<Player> players = new ArrayList<Player>();
 ArrayList<Star> stars = new ArrayList<Star>();
@@ -37,22 +37,18 @@ ArrayList<Part> parts = new ArrayList<Part>();
 ArrayList<Bullet> lastHitBullet = new ArrayList<Bullet>();
 ArrayList<Enemy> lastHitEnemy = new ArrayList<Enemy>();
 
-GameManager gameManager = new GameManager();
-
 HashMap<String, Integer> playerShipParts = new HashMap<String, Integer>();
 HashMap<String, Integer> enemyShipParts = new HashMap<String, Integer>();
 
-// Debug tool
-Debug debug = new Debug(false);
+// Game manager
+GameManager gameManager = new GameManager();
 
+// Scene manager
+SceneManager sceneManager = new SceneManager();
 
-void displayText() {
-  textFont(gameManager.font);
-  textSize(30);
-  fill(255);
-  text("HI SCORE: " + str(score), 20, 50);
-  text("LIVES: " + str(gameManager.lives), width - 175, 50);
-}
+// Debug tool + cheats inside
+Debug debug = new Debug(true);
+
 
 void setup() {
   
@@ -74,92 +70,97 @@ void draw() {
     gameStart = true;
   }
   else {
+    // Runs game
     runGame();
+    
+    // Plays intro scene
+    if (!sceneManager.introSceneOver) {
+      sceneManager.playIntroScene();
+    }  
   }
 }
 
 void runGame() {
   /* Runs main game loop */
   if (isActive) {
-    push();
 
-    // Clears screen
-    background(0);
-    
-    // Calculates screen jitter
-    if (screenShakeTimer > 0) {
-      screenJitter = random(-screenShake, screenShake);
-      translate(screenJitter, screenJitter);
-      screenShakeTimer--;
-    }
-    
-    // Checks for player input
-    gameManager.checkEvents();
-    
-    // Updates player state
-    gameManager.updatePlayer();
-    
-    // Will freeze game if player dies
-    if (player.isAlive()) {
-      // Updates stars state
-      gameManager.updateStars();
+      push();
+
+      // Clears screen
+      background(0);
       
-      // Updates enemies state
-      gameManager.updateEnemies();
+      // Checks screen shake
+      gameManager.updateScreenShake();
+
+// <===== General Wave Loop =====> //
+
+      // Checks for player input
+      gameManager.checkEvents();
       
-      // Respawns fleet if wave is ongoing
-      if (!gameManager.waveOver) {
-        gameManager.respawnFleet();
-      }
-      // if wave over, spawn boss
-      else {
-        if (enemies.size() == 0 && !gameManager.bossSpawned) {
-          gameManager.addBossEnemy();  // Waits until all enemies are gone
-          gameManager.bossSpawned = true;  // Toggles off boss spawned
-        }
-      } 
-    }
-    else {
-      // Player is dead; game over
-      if (gameManager.lives > 0) {  // => if have lives, respawn
-        // => reset game
+      // Updates player state
+      gameManager.updatePlayer();
+      
+      // Will freeze game if player dies
+      if (player.isAlive()) {
+        // Updates stars state
+        gameManager.updateStars();
         
-        // Draws the last bullet hit
-        gameManager.drawLastHit();
+        // Updates enemies state
+        gameManager.updateEnemies();
         
-        if (playerDeathTimer == -1) {
-          playerDeathTimer = restartTime;
+        // Updates wave time
+        gameManager.updateWaveTime();
+        
+        // Respawns fleet if wave is ongoing
+        if (!gameManager.waveOver) {
+          gameManager.respawnFleet();
         }
         
-        if (playerDeathTimer > 0) {
-          playerDeathTimer--;
-        }
-        
-        if (playerDeathTimer == 0) {
-          gameManager.lives -= 1;
-          gameManager.restart();
+        // if wave over & no more enemies, spawn boss
+        else {
+          if (enemies.size() == 0 && !sceneManager.bossSceneOver) {
+            sceneManager.playBossScene();  // Plays boss scene
+          }
+      
+          else if (enemies.size() == 0 && !gameManager.bossSpawned) {
+            gameManager.addBossEnemy();  // Waits until all enemies are gone
+            gameManager.bossSpawned = true;  // Toggles off boss spawned
+          }
+          
+          else if (enemies.size() == 0 && bossDead) {  // If all enemies are dead and the boss spawned
+            sceneManager.playBossDeathScene();
+          }
+          else {}
         }
       }
-      else {
-        // => displays game over
-        gameManager.displayGameOver();
-      } 
+      
+      else { // Player no longer alive
+        if (gameManager.lives > 0) {  // => if have lives, respawn
+          // => reset game
+          
+          // Draws the last bullet hit
+          gameManager.drawLastHit();
+          
+          // Updates player death
+          gameManager.updatePlayerDeath();
+        }
+        else {  // If no more lives, displays game over
+          gameManager.displayGameOver();
+        }
+      }
+      
+      // Updates parts state
+      gameManager.updateParts();
+      
+      // Updates player bullets state
+      gameManager.updatePlayerBullets();
+      
+      // Updates screen with changes
+      updateScreen(); 
+    
+      pop();
     }
-    
-    // Updates parts state
-    gameManager.updateParts();
-    
-    // Updates player bullets state
-    gameManager.updatePlayerBullets();
-    
-    // Updates wave time
-    gameManager.updateWaveTime();
-    
-    // Updates screen with changes
-    updateScreen(); 
-  
-    pop();
-  }
+
   // Debug
   debug.updateDebug();
 }
@@ -186,8 +187,8 @@ void updateScreen() {
     player.drawMe();
   }
   
-  // display text
-  displayText();
+  // display HUD text
+  gameManager.displayText();
   
   // Displays ul meter
   gameManager.displayUltMeter();

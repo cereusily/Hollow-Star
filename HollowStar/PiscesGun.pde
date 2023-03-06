@@ -5,8 +5,7 @@ class PiscesGun extends Gun {
     // Inits all attributes
     super(pos, vel, bulletArr);
     
-    // Inits velocity and size
-    this.vel = new PVector(0, -10);
+    // Inits size
     this.size = new PVector(10, 30);
     
     threshold = 7;

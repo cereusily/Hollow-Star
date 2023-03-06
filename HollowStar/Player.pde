@@ -17,8 +17,8 @@ class Player extends Character {
   color bulletInnerColour = color(255);
   
   // Player guns
-  PiscesGun playerGun;
-  TaurusGun playerUlt;
+  Gun playerGun;
+  Gun playerUlt;
   
   int switchCooldown;
   int switchThreshold = 20;

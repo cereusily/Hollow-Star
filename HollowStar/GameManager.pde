@@ -27,7 +27,7 @@ class GameManager {
   int enemyRespawnStartTime;
   
   Timer timer = new Timer();
-  int waveMaxTime = 30_000;
+  int waveMaxTime = 5_000;
   boolean waveOver;
   
   int waveNum = 0;
@@ -56,6 +56,8 @@ class GameManager {
   }
   
   void restart() {
+    /* Restarts and clears settings */
+    
     // Empties out all lists
     players.clear();
     stars.clear();
@@ -80,12 +82,6 @@ class GameManager {
     
     // <--- WAVE CODE --->
     resetWaveTime();
-    
-    // Initializes enemies
-    enemies.add(new Enemy(new PVector(200, 0), new PVector(0, 0.5), 4, new PVector(120, 120), 0.5, "BLUE", "ELITE"));
-
-    // Creates initial fleet
-    createFleet();
 
   }
   
@@ -115,6 +111,7 @@ class GameManager {
   }
   
   void addBossEnemy() {
+    // Adds a basic boss enemy
     enemies.add(
     new BossEnemy(new PVector(width/2, 0), new PVector(0, 0), 1000, new PVector(120, 120), 0.5, 
     "BLUE", "BOSS", "HOLLOW STAR"));
@@ -144,18 +141,29 @@ class GameManager {
     if (passedTime > enemyRespawnTime) {
       // Respawns fleet if enough time passed
       if (enemies.size() < 10) {
-        for (int i = 0; i < 2; i++) {
+        for (int i = 0; i < 2 + waveNum; i++) {
           
-          addEliteEnemy();
-          
+          // Loads in special enemies depending on wave num
           if (waveNum > 0) {    
+            addEliteEnemy();
+          }
+          if (waveNum > 1) {
             addFastEnemy();
           }
+          
           
         }
         createFleet();
         enemyRespawnStartTime = millis();
       }
+    }
+  }
+  
+  void killAllEnemies() {
+    /* Function that kills all */
+    for (int i = 0; i < enemies.size(); i++) {
+      Enemy currEnemy = enemies.get(i);
+      currEnemy.health = 0;
     }
   }
   
@@ -165,8 +173,16 @@ class GameManager {
   ====================
   */
   
+  void displayText() {
+    textFont(gameManager.font);
+    textSize(30);
+    fill(255);
+    text("HI SCORE: " + str(score), 20, 50);
+    text("LIVES: " + str(gameManager.lives), width - 175, 50);
+  }
+  
   void displayUltMeter() {
-    // Displays player's ultimate meter
+    /* Displays player's ultimate meter */
     if (player.canUseUlt()) {
       textAlign(CENTER);
       fill(255);
@@ -209,18 +225,50 @@ class GameManager {
     // Pauses game timer
     timer.pause();
     
-    // Displays main menu
-    textFont(font);
-    textAlign(CENTER);
-    fill(255);
-    textSize(120);
-    text("HOLLOW STAR", width/2, 400);
-    textSize(30);
-    text("< PRESS ENTER/RETURN TO START >", width/2, 470);
-    textSize(20);
-    text("< PRESS ESC TO QUIT >", width/2, 500);
-    textAlign(LEFT);
+    if (!howToOn) {
+      // Displays main menu
+
+      textFont(font);
+      textAlign(CENTER);
+      fill(255);
+      
+      // Line 1
+      textSize(120);
+      text("HOLLOW STAR", width/2, 400);
+      
+      // Line 2
+      textSize(30);
+      text("< PRESS ENTER/RETURN TO START >", width/2, 470);
+      
+      // Line 3
+      textSize(20);
+      text("< PRESS ESC TO QUIT >", width/2, 500);
+      
+      // Line 4
+      textSize(20);
+      text("< PRESS TAB TO DISPLAY CONTROLS >", width/2, 530);
+      
+      textAlign(LEFT);
+    }
   }
+  
+  void displayEndGame() {
+    // Line 1
+    background(0);
+    textAlign(CENTER);
+    
+    textSize(120);
+    text("YOU WIN", width/2, 400);
+    
+    // Line 2
+    textSize(30);
+    text("YOU SAVED THE GALAXY", width/2, 470);
+    
+    // Line 3
+    textSize(20);
+    text("HI SCORE: " + str(score), width/2, 500); 
+  }
+  
   
   /* 
   =======================
@@ -235,12 +283,16 @@ class GameManager {
     if (menuOn) {
       if (key == ENTER || key == RETURN) {
         menuOn = false;
-        isActive = true;
       }
     }
+    
+    if (key == TAB) {
+      howToOn = !howToOn;
+    }
+    
     // Regular keyboard checks
     else {
-      if (player.isAlive()) {
+      if (players.size() > 0  ) {
         if (key == CODED) {
           if (keyCode == UP) {
             moveUp = true;
@@ -272,11 +324,12 @@ class GameManager {
       else {
         holdFire = false;  // Stops firing if player is dead
       }
-      // Ends game
+      // Pauses game
       if (key == ESC) {
-        key = 0;    // resets key
+        if (!menuOn) {
+          key = 0;
+        }
         menuOn = true;
-        isActive = false;
       }
       // Resets game if enter / return is entered
       if ((key == ENTER || key == RETURN) && gameOver) {  // Starts game
@@ -398,6 +451,30 @@ class GameManager {
     }
   }
   
+  void updatePlayerDeath() {
+    /* Is called when player dies */
+    if (playerDeathTimer == -1) {
+      playerDeathTimer = restartTime;
+    }
+    if (playerDeathTimer > 0) {
+      playerDeathTimer--;
+    }
+    if (playerDeathTimer == 0) {
+      lives -= 1;
+      restart();
+    }
+  }
+  
+  void updateScreenShake() {
+    /* Calculates screen jitter */
+    if (screenShakeTimer > 0) {
+      screenJitter = random(-screenShake, screenShake);
+      translate(screenJitter, screenJitter);
+      screenShakeTimer--;
+    }
+  }
+  
+  
   void updatePlayer() {    // => Player is in array to avoid duplicate part method call during drawDeath();
     /* Updates player sprites */
     for (int i = 0; i < players.size(); i++) {
@@ -459,6 +536,12 @@ class GameManager {
       waveOver = true;
       timer.pause();
     }
+    else if (waveOver) {
+      timer.pause();
+    }
+    else {
+      timer.keepRunning();
+    }
     
     // Fills timer bar
     fill(244,3,3);
@@ -476,6 +559,8 @@ class GameManager {
     /* Resets wave clock */
     timer.reset();
     waveOver = false;
+    bossDead = false;
+    sceneManager.bossSceneOver = false;
   }
   
   /**
@@ -485,7 +570,7 @@ class GameManager {
   */
   
   void initPartsMap() {
-    // enemy hashmap
+    /* Puts all parts into unique hashmap */
     enemyShipParts.put("MainBody", 0);
     enemyShipParts.put("MainWindow", 1);
     enemyShipParts.put("WindowRoof", 2);
@@ -499,7 +584,7 @@ class GameManager {
     enemyShipParts.put("RightOuterFlap", 10);
     enemyShipParts.put("NoseDetails", 11);
     
-    // Play hashmap
+    // Player hashmap
     playerShipParts.put("LeftMainGun", 0);
     playerShipParts.put("LeftGunSub", 1);
     playerShipParts.put("RightGunMain", 2);

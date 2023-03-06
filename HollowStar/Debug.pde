@@ -7,7 +7,7 @@ class Debug {
     this.active = active;
     
 /* Change this if you want to cheat for testing purposes */
-    this.cheatOn = false;
+    this.cheatOn = true;
   }
   
   boolean getState() {
@@ -16,9 +16,13 @@ class Debug {
   
   void debugCheat() {
     if (cheatOn) {
-      
-      
-      
+      if (players.size() > 0) {
+        Player player = players.get(0);
+        
+        // Set cheats
+        player.playerUlt.power = 2000;  // Insta kill taurus shot
+        player.ultimateMeter = 20;      // Unlimited ultimate meter
+      }
     }
   }
   
@@ -41,6 +45,14 @@ class Debug {
       text(str(lastHitBullet.get(0).pos.x), 20, 530);
       text(str(lastHitBullet.get(0).pos.y), 20, 560);
     }
+    
+    // Wave number
+    text("WAVE NUMBER", 20, 610);
+    text(str(gameManager.waveNum), 20, 640);
+    
+    // Wave over debug
+    text("WAVE OVER", width - 150, 170);
+    text(str(gameManager.waveOver), width-150, 200);
   }
   
   void drawDebug() {

@@ -8,7 +8,7 @@ class AquariusGun extends Gun {
     this.size = new PVector(30, 30);
     
     // Thresholds & cooldowns
-    threshold = 100;
+    threshold = 110;
     cooldown = 10;
   }
   

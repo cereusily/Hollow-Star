@@ -6,11 +6,14 @@ class BossEnemy extends Enemy {
   ArrayList<Bullet> bossBullets = new ArrayList<Bullet>();
   
   int switchCooldown;
-  int switchThreshold = 150;
+  int switchThreshold;
   
-  AquariusGun bossGun;
+  boolean waveUpdated;
+  
+  Gun bossGun;
   
   int bulletPower = 1;
+  float fireSpeed;
   int maxHealth;
   String name;
   
@@ -18,16 +21,23 @@ class BossEnemy extends Enemy {
     super(pos, vel, health, size, scaleFactor, state, enemyType);
     
     // Overrides fields
-    this.points = 1000;
+    this.points = 800 + (100 * gameManager.waveNum);
     
     // Sets max health
     this.maxHealth = health;
     
     // Sets name
     this.name = name;
+
+    // Sets wave upadted bool
+    this.waveUpdated = false;
     
     // Sets gun
-    bossGun = new AquariusGun(this.pos, new PVector(5, 5), bossBullets);
+    this.bossGun = new AquariusGun(this.pos, new PVector(3 + gameManager.waveNum, 3 + gameManager.waveNum), bossBullets);
+    
+    // Sets thresholds
+    this.switchThreshold = 300 - (50 * gameManager.waveNum);
+    this.bossGun.threshold = 140 - (12 * gameManager.waveNum);
     
     // Sets colour
     PShape mainBody = shipShape.getChild(enemyShipParts.get("MainBody"));
@@ -57,9 +67,6 @@ class BossEnemy extends Enemy {
     // Minions :D
     gameManager.addNewEnemy(new PVector(200, 0), new PVector(0, 4), "BLUE");
     gameManager.addNewEnemy(new PVector(width - 200, 0), new PVector(0, 4), "RED");
-    
-    // Indicates end of wave
-    gameManager.waveNum += 1;
   } 
   
   void update() {
@@ -102,8 +109,11 @@ class BossEnemy extends Enemy {
     bossGun.recharge();
     
     if (!super.isAlive()) {
-      gameManager.bossSpawned = false;
-      gameManager.resetWaveTime();
+      if (!waveUpdated) {
+        gameManager.waveNum += 1;  // Indicates end of wave
+        waveUpdated = true;
+        bossDead = true;
+      }
     }
   }
   
