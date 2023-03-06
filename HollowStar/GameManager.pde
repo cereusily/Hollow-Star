@@ -224,32 +224,31 @@ class GameManager {
     
     // Pauses game timer
     timer.pause();
-    
-    if (!howToOn) {
-      // Displays main menu
+     
+    // Displays main menu
 
-      textFont(font);
-      textAlign(CENTER);
-      fill(255);
-      
-      // Line 1
-      textSize(120);
-      text("HOLLOW STAR", width/2, 400);
-      
-      // Line 2
-      textSize(30);
-      text("< PRESS ENTER/RETURN TO START >", width/2, 470);
-      
-      // Line 3
-      textSize(20);
-      text("< PRESS ESC TO QUIT >", width/2, 500);
-      
-      // Line 4
-      textSize(20);
-      text("< PRESS TAB TO DISPLAY CONTROLS >", width/2, 530);
-      
-      textAlign(LEFT);
-    }
+    textFont(font);
+    textAlign(CENTER);
+    fill(255);
+    
+    // Line 1
+    textSize(120);
+    text("HOLLOW STAR", width/2, 400);
+    
+    // Line 2
+    textSize(30);
+    text("< PRESS ENTER/RETURN TO START >", width/2, 470);
+    
+    // Line 3
+    textSize(20);
+    text("< PRESS ESC TO QUIT >", width/2, 500);
+    
+    // Line 4
+    //textSize(20);
+    //text("< PRESS TAB TO DISPLAY CONTROLS >", width/2, 530);
+    
+    textAlign(LEFT);
+    
   }
   
   void displayEndGame() {
@@ -284,10 +283,6 @@ class GameManager {
       if (key == ENTER || key == RETURN) {
         menuOn = false;
       }
-    }
-    
-    if (key == TAB) {
-      howToOn = !howToOn;
     }
     
     // Regular keyboard checks
@@ -335,6 +330,8 @@ class GameManager {
       if ((key == ENTER || key == RETURN) && gameOver) {  // Starts game
           lives = 3;
           score = 0;
+          waveNum = 0;
+          sceneManager.introSceneOver = false;
           restart();
       }
     }

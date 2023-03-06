@@ -31,7 +31,7 @@ class Player extends Character {
   color stateColour = blue;
   
   int ultimateMeter;
-  int ultimateMaxMeter = 20;
+  int ultimateMaxMeter = 15;
   
   
   Player(PVector pos, PVector vel, int health, PVector size, float scaleFactor) {

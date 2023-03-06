@@ -28,7 +28,6 @@ boolean gameStart = false;
 boolean bossDead = false;
 
 boolean menuOn;
-boolean howToOn;
 
 ArrayList<Player> players = new ArrayList<Player>();
 ArrayList<Star> stars = new ArrayList<Star>();
@@ -47,7 +46,7 @@ GameManager gameManager = new GameManager();
 SceneManager sceneManager = new SceneManager();
 
 // Debug tool + cheats inside
-Debug debug = new Debug(true);
+Debug debug = new Debug(false);
 
 
 void setup() {

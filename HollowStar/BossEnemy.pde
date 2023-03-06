@@ -39,6 +39,9 @@ class BossEnemy extends Enemy {
     this.switchThreshold = 300 - (50 * gameManager.waveNum);
     this.bossGun.threshold = 140 - (12 * gameManager.waveNum);
     
+    // Sets parts duration
+    this.partRemoveTimer = 160;
+    
     // Sets colour
     PShape mainBody = shipShape.getChild(enemyShipParts.get("MainBody"));
     mainBody.setFill(255);

@@ -21,7 +21,7 @@ class Debug {
         
         // Set cheats
         player.playerUlt.power = 2000;  // Insta kill taurus shot
-        player.ultimateMeter = 20;      // Unlimited ultimate meter
+        player.ultimateMeter = player.ultimateMaxMeter;      // Unlimited ultimate meter
       }
     }
   }
@@ -52,19 +52,13 @@ class Debug {
     
     // Wave over debug
     text("WAVE OVER", width - 150, 170);
-    text(str(gameManager.waveOver), width-150, 200);
+    text(str(gameManager.waveOver), width - 150, 200);
   }
-  
-  void drawDebug() {
-    
-  }
-  
   
   void updateDebug() {    
     if (active) {
       debugStats();
       debugCheat();
-      drawDebug();
     } 
   }
 }
