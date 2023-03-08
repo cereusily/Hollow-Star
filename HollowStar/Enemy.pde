@@ -2,7 +2,6 @@ class Enemy extends Character {
   
   /* Class that manages enemy objects */
   
-  
   int enemyPower = 1;
   int partRemoveTimer = 80;
   color enemyColour = color(0, 255, 0);
@@ -16,7 +15,6 @@ class Enemy extends Character {
   String state;
   color stateColour;
   String enemyType;
-  
   
   
   Enemy(PVector pos, PVector vel, int health, PVector size, float scaleFactor, String state, String enemyType) {
@@ -66,7 +64,6 @@ class Enemy extends Character {
     if (deathTimer == 0) {
       drawDeath();
       score += this.points;
-      player.addToUlt();
       enemies.remove(this);
     }
     

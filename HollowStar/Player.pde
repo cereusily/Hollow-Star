@@ -31,7 +31,7 @@ class Player extends Character {
   color stateColour = blue;
   
   int ultimateMeter;
-  int ultimateMaxMeter = 15;
+  int ultimateMaxMeter = 150;
   
   
   Player(PVector pos, PVector vel, int health, PVector size, float scaleFactor) {
@@ -88,7 +88,7 @@ class Player extends Character {
   
   void checkHealth() {
     // Checks if player is dead 
-    if (health < 0) {
+    if (health < 1) {
       
       // Sets animations
       if (isAlive()) {      
@@ -106,9 +106,9 @@ class Player extends Character {
     return (this.ultimateMeter == this.ultimateMaxMeter);
   }
   
-  void addToUlt() {
+  void addToUlt(int inc) {
     if (ultimateMeter < ultimateMaxMeter) {
-      ultimateMeter++;
+      ultimateMeter += inc;
     }
   }
   
@@ -132,12 +132,14 @@ class Player extends Character {
           // if same state => regular bullet power
           if (currEnemy.getState() == currBullet.getState()) {
             currEnemy.decreaseHealth(currBullet.power); 
+            
             screenShakeTimer = 2;
             currEnemy.pos.y -= 2.5;
           }   
-          // If not same state
+          // If not same state => double bullet power & increase ult
           if (currEnemy.getState() != currBullet.getState()) {
             currEnemy.decreaseHealth(currBullet.power * 2); 
+            addToUlt(5);
             screenShakeTimer = 3;
             currEnemy.pos.y -= 5;
           }

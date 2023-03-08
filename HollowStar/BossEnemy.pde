@@ -11,6 +11,7 @@ class BossEnemy extends Enemy {
   boolean waveUpdated;
   
   Gun bossGun;
+  Gun bossSecondaryGun;
   
   int bulletPower = 1;
   float fireSpeed;
@@ -33,11 +34,13 @@ class BossEnemy extends Enemy {
     this.waveUpdated = false;
     
     // Sets gun
-    this.bossGun = new AquariusGun(this.pos, new PVector(3 + gameManager.waveNum, 3 + gameManager.waveNum), bossBullets);
+    this.bossGun = new MachineGun(this.pos, new PVector(0.6 +(0.1 * gameManager.waveNum), 0.6 + (0.1 * gameManager.waveNum)), bossBullets);
+    this.bossSecondaryGun = new AquariusGun(this.pos, new PVector(3 + gameManager.waveNum, 3 + gameManager.waveNum), bossBullets);
     
     // Sets thresholds
     this.switchThreshold = 300 - (50 * gameManager.waveNum);
     this.bossGun.threshold = 140 - (12 * gameManager.waveNum);
+    this.bossSecondaryGun.threshold = 60 - gameManager.waveNum;
     
     // Sets parts duration
     this.partRemoveTimer = 160;
@@ -105,11 +108,14 @@ class BossEnemy extends Enemy {
     }
     
     // Shoots gun
-    bossGun.shoot(this.getState());
+    bossGun.shoot((this.getState() == "BLUE" ? "RED" : "BLUE"));
+    bossSecondaryGun.shoot(this.getState());  // Gets opposite state
+    
     updateBullets();
     
     // Recharges gun
     bossGun.recharge();
+    bossSecondaryGun.recharge();
     
     if (!super.isAlive()) {
       if (!waveUpdated) {
@@ -186,19 +192,6 @@ class BossEnemy extends Enemy {
     textAlign(LEFT);
   }
   
-  void fireBullets() {
-    float randomX = (float) random(-5, 5);
-    float randomY = (float) random(-5, 5);
-    
-    PVector tempPos = this.pos.copy();
-    
-    Bullet newBullet = new Bullet(tempPos, new PVector(randomX, randomY), new PVector(30, 30));
-    newBullet.colourWeight = 5;
-    newBullet.setState(this.getState());
-    
-    bossBullets.add(newBullet);
-  }
-  
   void checkProjectiles() {
     // Checks projectile hit player
     for (int i = 0; i < bossBullets.size(); i++) {
@@ -218,15 +211,10 @@ class BossEnemy extends Enemy {
           }
           // If state is same as player
           if (currBullet.getState() == currPlayer.getState()) {
-            player.addToUlt();  // If bullet is same state as player, player absorbs & gains ult points
+            player.addToUlt(5);  // If bullet is same state as player, player absorbs & gains ult points
           }
           
-          // Subtracts durability;
-          currBullet.durability--;
-          
-          if (!currBullet.hasDurability()) {
-            currBullet.removeSelf(bossBullets);  // Removes bullet from array if no more durability
-          }
+          bossBullets.remove(currBullet);
         }
       }
     }

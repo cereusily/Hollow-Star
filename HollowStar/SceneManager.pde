@@ -70,19 +70,19 @@ class SceneManager {
     // Text
     switch (gameManager.waveNum) {
       case 0:
-        lineOne = "WARNING! NEW ANOMALY DETECTED";
+        lineOne = "WARNING! NEW ANOMALY DETECTED.";
         lineTwo = "HOLLOW STAR DETECTED.";
         lineThree = "COMPLETE YOUR OBJECTIVE.";
         break;
       case 1:
-        lineOne = "WARNING! ANOMALY DETECTED";
-        lineTwo = "UPGRADED HOLLOW STAR DETECTED";
+        lineOne = "WARNING! ANOMALY DETECTED.";
+        lineTwo = "UPGRADED HOLLOW STAR DETECTED.";
         lineThree = "COMPLETE YOUR OBJECTIVE";
         break;
       default:
         lineOne = "WARNING WARNING WARNING";
         lineTwo = "HOLLOW STAR UPGRADES CONTINUES";
-        lineThree = "COMPLETE YOUR OBJECTIVE";
+        lineThree = "COMPLETE YOUR OBJECTIVE.";
         break;
     }
     

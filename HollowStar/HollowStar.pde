@@ -129,7 +129,7 @@ void runGame() {
           else if (enemies.size() == 0 && bossDead) {  // If all enemies are dead and the boss spawned
             sceneManager.playBossDeathScene();
           }
-          else {}
+          else {}  // Do nothing
         }
       }
       

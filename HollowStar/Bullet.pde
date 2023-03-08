@@ -24,6 +24,7 @@ class Bullet {
     
     // Sets inner colour of bullet
     bulletInnerColour = color(255);
+    
   }
   
   void update() {
@@ -36,9 +37,11 @@ class Bullet {
     switch(state){
       case "BLUE":
         stateColour = blue;
+        bulletInnerColour = color(255);
         break;
       case "RED":
         stateColour = red;
+        bulletInnerColour = color(20);
         break;
     } 
     bulletOuterColour = stateColour; 

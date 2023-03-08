@@ -27,7 +27,7 @@ class GameManager {
   int enemyRespawnStartTime;
   
   Timer timer = new Timer();
-  int waveMaxTime = 5_000;
+  int waveMaxTime = 45_000;
   boolean waveOver;
   
   int waveNum = 0;
