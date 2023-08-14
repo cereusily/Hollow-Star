@@ -315,6 +315,23 @@ class GameManager {
         if (key == 'x' && player.canUseUlt()) {
           player.fireUlt();
         }
+        if (key == 'w' || key == 'W') {
+          moveUp = true;
+        }
+        if (key == 's' || key == 'S') {
+          moveDown = true;
+        }
+        if (key == 'a' || key == 'A') {
+          moveLeft = true;
+          player.rotateFactor = -PI/8;
+        }
+        if (key == 'd' || key == 'D') {
+          moveRight = true;
+          player.rotateFactor = PI/8;
+        }
+        if (keyCode == SHIFT && player.switchCooldown == player.switchThreshold) {
+          player.switchState();
+        }
       }
       else {
         holdFire = false;  // Stops firing if player is dead
@@ -362,6 +379,24 @@ class GameManager {
     // Player bullets
     if (key == ' ') {
       holdFire = false;
+    }
+    if (key == 'w' || key == 'W') {
+      moveUp = false;
+    }
+    if (key == 's' || key == 'S') {
+      moveDown = false;
+    }
+    if (key == 'a' || key == 'A') {
+      moveLeft = false;  // nullpointer when no player in playerarray   
+      if (gameStart) {  // Only resets rotation when player is in game => else nullpointer
+        player.rotateFactor = 0;
+      } 
+    }
+    if (key == 'd' || key == 'D') {
+      moveRight = false;
+      if (gameStart) {
+        player.rotateFactor = 0;
+      } 
     }
   }
   
