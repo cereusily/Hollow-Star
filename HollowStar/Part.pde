@@ -37,7 +37,7 @@ class Part extends Bullet {
     
     // Removes self once timer is done
     if (removeTimer == 0) {
-      parts.remove(this);
+      gameManager.parts.remove(this);
     }
   }
   

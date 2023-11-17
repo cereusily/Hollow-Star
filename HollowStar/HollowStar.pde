@@ -5,39 +5,7 @@ color orange = color(252, 163, 17);
 color blue = color(4, 118, 208);
 color red = color (255, 100, 90);
   
-int shipWidth = 100;
 Player player;
-Enemy enemyOne;
-
-int enemyWidth = 80;
-int numEnemies = 10;
-
-float screenShake;
-float screenShakeTimer;
-float screenJitter;
-
-int score;
-
-int playerDeathTimer = -1;
-int restartTime = 150;
-
-
-boolean isActive;
-boolean gameOver;
-boolean gameStart = false;
-boolean bossDead = false;
-
-boolean menuOn;
-
-ArrayList<Player> players = new ArrayList<Player>();
-ArrayList<Star> stars = new ArrayList<Star>();
-ArrayList<Enemy> enemies = new ArrayList<Enemy>();
-ArrayList<Part> parts = new ArrayList<Part>();
-ArrayList<Bullet> lastHitBullet = new ArrayList<Bullet>();
-ArrayList<Enemy> lastHitEnemy = new ArrayList<Enemy>();
-
-HashMap<String, Integer> playerShipParts = new HashMap<String, Integer>();
-HashMap<String, Integer> enemyShipParts = new HashMap<String, Integer>();
 
 // Game manager
 GameManager gameManager = new GameManager();
@@ -46,7 +14,7 @@ GameManager gameManager = new GameManager();
 SceneManager sceneManager = new SceneManager();
 
 // Debug tool + cheats inside
-Debug debug = new Debug(false);
+Debug debug = new Debug(true);
 
 
 void setup() {
@@ -61,27 +29,31 @@ void setup() {
 
 void draw() {
   // Displays menu and runs game once menu is closed
-  if (menuOn) {
+  if (gameManager.menuOn) {    
     gameManager.displayMenu();
   }
-  else if (!gameStart) {
+  else if (!gameManager.gameStart) {
     gameManager.restart();
-    gameStart = true;
+    gameManager.gameStart = true;
   }
   else {
     // Runs game
     runGame();
     
     // Plays intro scene
-    if (!sceneManager.introSceneOver) {
+    if (!sceneManager.tutorialSceneOver) {
+      sceneManager.playTutorialScene();
+    }
+    else if (!sceneManager.introSceneOver && sceneManager.tutorialSceneOver) {
       sceneManager.playIntroScene();
     }  
+    else {} // do nothing
   }
 }
 
 void runGame() {
   /* Runs main game loop */
-  if (isActive) {
+  if (gameManager.isActive) {
 
       push();
 
@@ -109,27 +81,30 @@ void runGame() {
         
         // Updates wave time
         gameManager.updateWaveTime();
+
         
         // Respawns fleet if wave is ongoing
-        if (!gameManager.waveOver) {
+        if (sceneManager.introSceneOver && !gameManager.waveOver && sceneManager.tutorialSceneOver) {
           gameManager.respawnFleet();
         }
         
         // if wave over & no more enemies, spawn boss
         else {
-          if (enemies.size() == 0 && !sceneManager.bossSceneOver) {
-            sceneManager.playBossScene();  // Plays boss scene
-          }
+          if (sceneManager.introSceneOver) {
+            if (gameManager.enemies.size() == 0 && !sceneManager.bossSceneOver) {
+              sceneManager.playBossScene();  // Plays boss scene
+            }
       
-          else if (enemies.size() == 0 && !gameManager.bossSpawned) {
-            gameManager.addBossEnemy();  // Waits until all enemies are gone
-            gameManager.bossSpawned = true;  // Toggles off boss spawned
+            else if (gameManager.enemies.size() == 0 && !gameManager.bossSpawned) {
+              gameManager.addBossEnemy();  // Waits until all enemies are gone
+              gameManager.bossSpawned = true;  // Toggles off boss spawned
+            }
+            
+            else if (gameManager.enemies.size() == 0 && gameManager.bossDead) {  // If all enemies are dead and the boss spawned
+              sceneManager.playBossDeathScene();
+            }
+            else {}  // Do nothing
           }
-          
-          else if (enemies.size() == 0 && bossDead) {  // If all enemies are dead and the boss spawned
-            sceneManager.playBossDeathScene();
-          }
-          else {}  // Do nothing
         }
       }
       

@@ -2,6 +2,12 @@ class SceneManager {
   /* Class that manages the cutscenes */
   Timer timer;
   boolean timerStarted;
+  boolean tutorialSceneOver = false;
+  
+  boolean tutorialEnemySpawned = false;
+  boolean tutorialEnemyKilled = false;
+  
+  
   boolean introSceneOver = false;
   boolean bossSceneOver = false;
   boolean bossDeathSceneOver  = false;
@@ -20,6 +26,56 @@ class SceneManager {
     textSize(48);
     fill(255);
     textAlign(CENTER);
+  }
+  
+  void playTutorialScene() {
+    /* Plays tutorial scene when called */
+    push();
+    
+    // text settings
+    setText();
+    
+    if (!timerStarted) {
+      timer.begin();
+      timerStarted = true;
+    }
+    
+    if (timer.getCurrentTime() < 2_000) {
+      text("PRESS SPACE BAR TO FIRE.", width/2, height/2); 
+    }
+    else if (timer.getCurrentTime() < 5_500) {
+      text("WASD/ARROW KEYS TO MOVE.", width/2, height/2); 
+    }
+    else if (timer.getCurrentTime() < 10_500) {
+      if (gameManager.players.size() > 0) {
+        Player player = gameManager.players.get(0);
+        
+        // Give player ultimate
+        player.ultimateMeter = player.ultimateMaxMeter;
+      }
+      text("PRESS X TO FIRE ULTIMATE.", width/2, height/2); 
+    }
+    else if (timer.getCurrentTime() < 15_000) {
+      // shift key explanation
+      text("PRESS SHIFT TO SHIFT POLARITY.", width/2, height/2); 
+      player.ultimateMeter = 0;
+    }
+    else if (timer.getCurrentTime() < 17_500) {
+      // shift key explanation
+      text("OPPOSITE POLARITIES DEAL ADDITIONAL DAMAGE.", width/2, height/2); 
+    }
+    else if (timer.getCurrentTime() < 19_500) {
+      text("YOU ABSORB MATCHING POLARITY BULLETS.", width/2, height/2); 
+    }
+    else if (timer.getCurrentTime() < 22_000) {
+      text("COLLISIONS WILL STILL DESTROY YOUR SHIP.", width/2, height/2); 
+    }
+    else {
+      tutorialSceneOver = true;
+      timerStarted = false;
+      timer.reset();
+    }
+    pop();
   }
   
   
@@ -123,19 +179,22 @@ class SceneManager {
     
     // Plays first line
     if (timer.getCurrentTime() < 2_000) {
-      text("WARNING! ADDITIONAL ANOMALIES DETECTED", width/2, height/2);
+      text("HOLLOW STAR DESTROYED. OBJECTIVE CLEARED.", width/2, height/2);
     }
     else if (timer.getCurrentTime() < 4_500) {
-      text("MULTIPLE HOLLOW STARS DETECTED.", width/2, height/2);
+      text("WARNING! ADDITIONAL ANOMALIES DETECTED.", width/2, height/2);
     }
     else if (timer.getCurrentTime() < 6_500) {
+      text("MULTIPLE HOLLOW STARS DETECTED.", width/2, height/2);
+    }
+    else if (timer.getCurrentTime() < 8_500) {
       text("CONTINUE YOUR OBJECTIVE.", width/2, height/2);
     }
     else {
       bossDeathSceneOver = true;
       timerStarted = false;
       gameManager.bossSpawned = false;
-      bossDead = false;
+      gameManager.bossDead = false;
       gameManager.resetWaveTime();
       timer.reset();
     }

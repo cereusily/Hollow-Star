@@ -4,6 +4,8 @@ class Player extends Character {
   float acc = 0.7;
   float damp = 0.87;
   
+  int shipWidth = 100;
+  
   PVector upAcc = new PVector(0, -acc);
   PVector downAcc = new PVector(0, acc);
   PVector leftAcc = new PVector(-acc, 0);
@@ -75,7 +77,7 @@ class Player extends Character {
     }  
     if (deathTimer == 0) {
       drawDeath();
-      players.remove(this);
+      gameManager.players.remove(this);
     }
 
     // Check color state => Refactor to game manager later
@@ -93,7 +95,7 @@ class Player extends Character {
       // Sets animations
       if (isAlive()) {      
         deathTimer = deathAnimationTime;
-        screenShake = 100;
+        gameManager.screenShake = 100;
       }
     }
   }
@@ -123,8 +125,8 @@ class Player extends Character {
       Bullet currBullet = playerBullets.get(i);
       
       // Regular enemies
-      for (int j = 0; j < enemies.size(); j++) {
-        Enemy currEnemy = enemies.get(j);
+      for (int j = 0; j < gameManager.enemies.size(); j++) {
+        Enemy currEnemy = gameManager.enemies.get(j);
         
         // Check if player states matches enemies
         if (currBullet.hit(currEnemy)) {
@@ -133,14 +135,14 @@ class Player extends Character {
           if (currEnemy.getState() == currBullet.getState()) {
             currEnemy.decreaseHealth(currBullet.power); 
             
-            screenShakeTimer = 2;
+            gameManager.screenShakeTimer = 2;
             currEnemy.pos.y -= 2.5;
           }   
           // If not same state => double bullet power & increase ult
           if (currEnemy.getState() != currBullet.getState()) {
             currEnemy.decreaseHealth(currBullet.power * 2); 
             addToUlt(5);
-            screenShakeTimer = 3;
+            gameManager.screenShakeTimer = 3;
             currEnemy.pos.y -= 5;
           }
           
@@ -182,15 +184,15 @@ class Player extends Character {
     }
     
     // Updates main body
-    PShape mainBody = shipShape.getChild(playerShipParts.get("MainBody"));    
+    PShape mainBody = shipShape.getChild(gameManager.playerShipParts.get("MainBody"));    
     mainBody.setFill(stateColour); 
     
     // Updates secondary parts
     color secondaryFill = (state == "BLUE" ? blueGray : orange);
     
-    PShape leftWing = shipShape.getChild(playerShipParts.get("LeftWing"));    
+    PShape leftWing = shipShape.getChild(gameManager.playerShipParts.get("LeftWing"));    
     leftWing.setFill(secondaryFill); 
-    PShape rightWing = shipShape.getChild(playerShipParts.get("RightWing"));    
+    PShape rightWing = shipShape.getChild(gameManager.playerShipParts.get("RightWing"));    
     rightWing.setFill(secondaryFill); 
   }
   
@@ -203,19 +205,19 @@ class Player extends Character {
     PVector tempPos = new PVector();
     
     // Copies last bullet hit or else last death coords
-    if (lastHitBullet.size() > 0) {
-      tempPos = lastHitBullet.get(0).pos.copy();
+    if (gameManager.lastHitBullet.size() > 0) {
+      tempPos = gameManager.lastHitBullet.get(0).pos.copy();
     }
-    else if (lastHitEnemy.size() > 0) {
-      tempPos = lastHitEnemy.get(0).pos.copy();
+    else if (gameManager.lastHitEnemy.size() > 0) {
+      tempPos = gameManager.lastHitEnemy.get(0).pos.copy();
     }
     else {
       tempPos = this.pos.copy();
     }
     
     // Creates broken parts at copied vector
-    PShape brokenPart = shipShape.getChild(playerShipParts.get(partName));
-    parts.add(new Part(tempPos, new PVector(x, y), 160, brokenPart, this.scaleFactor, PI/20, 1000));
+    PShape brokenPart = shipShape.getChild(gameManager.playerShipParts.get(partName));
+    gameManager.parts.add(new Part(tempPos, new PVector(x, y), 160, brokenPart, this.scaleFactor, PI/20, 1000));
   }
   
   void displayArc() {
@@ -271,7 +273,7 @@ class Player extends Character {
     // Draws death animation
     
     // Creates destroyed parts
-    for (String name : playerShipParts.keySet()) {
+    for (String name : gameManager.playerShipParts.keySet()) {
       breakPart(name);
     }
   }

@@ -1,11 +1,28 @@
 class GameManager {
   /* Helper class that manages game */
+  boolean isActive;
+  
+  boolean gameOver;
+  boolean gameStart = false;
+  boolean bossDead = false;
+  
+  float screenShake;
+  float screenShakeTimer;
+  float screenJitter;
+  
+  int playerDeathTimer = -1;
+  int restartTime = 150;
+  
   boolean moveUp;
   boolean moveDown;
   boolean moveLeft;
   boolean moveRight;
   
   int lives = 3;
+  int shipWidth = 100;
+  
+  //int enemyWidth = 80;
+  int numEnemies = 10;
   
   boolean holdFire;
   int bulletCoolDownStartTime;
@@ -27,7 +44,7 @@ class GameManager {
   int enemyRespawnStartTime;
   
   Timer timer = new Timer();
-  int waveMaxTime = 45_000;
+  int waveMaxTime = 5_000;
   boolean waveOver;
   
   int waveNum = 0;
@@ -36,8 +53,26 @@ class GameManager {
   float angle;
   PFont font;
   
+  // score stuff
+  int score;
+  
+  // Menu
+  boolean menuOn;
+  
+  // Arraylists
+  ArrayList<Player> players = new ArrayList<Player>();
+  ArrayList<Star> stars = new ArrayList<Star>();
+  ArrayList<Enemy> enemies = new ArrayList<Enemy>();
+  ArrayList<Part> parts = new ArrayList<Part>();
+  ArrayList<Bullet> lastHitBullet = new ArrayList<Bullet>();
+  ArrayList<Enemy> lastHitEnemy = new ArrayList<Enemy>();
+ 
+  HashMap<String, Integer> playerShipParts = new HashMap<String, Integer>();
+  HashMap<String, Integer> enemyShipParts = new HashMap<String, Integer>();
 
-  GameManager() {}
+  GameManager() {
+    
+  }
   
   void initAssets() {
     /* Initializes game assets */
@@ -149,9 +184,7 @@ class GameManager {
           }
           if (waveNum > 1) {
             addFastEnemy();
-          }
-          
-          
+          }    
         }
         createFleet();
         enemyRespawnStartTime = millis();
@@ -179,6 +212,19 @@ class GameManager {
     fill(255);
     text("HI SCORE: " + str(score), 20, 50);
     text("LIVES: " + str(gameManager.lives), width - 175, 50);
+      
+    // Enemies remaining
+    textSize(15);
+    text("HOSTILES REMAINING: ", width - 200, 80);
+    if (enemies.size() == 0) {
+      fill(255);
+    }
+    else {
+      fill(255, 0, 0);
+    }
+    text(str(enemies.size()), width - 50, 100); 
+    textSize(30);
+    fill(255);
   }
   
   void displayUltMeter() {
@@ -221,6 +267,13 @@ class GameManager {
   }
   
   void displayMenu() {
+    // Draw background
+    background(0);
+    
+    // Adds stars
+    if (gameManager.starOffCoolDown()) {
+      gameManager.addStar();
+    };
     
     // Pauses game timer
     timer.pause();
@@ -248,6 +301,7 @@ class GameManager {
     //text("< PRESS TAB TO DISPLAY CONTROLS >", width/2, 530);
     
     textAlign(LEFT);
+    updateStars();
     
   }
   
@@ -312,7 +366,7 @@ class GameManager {
           holdFire = true;
         }    
         // Ult shot
-        if (key == 'x' && player.canUseUlt()) {
+        if ((key == 'x' || key == 'X') && player.canUseUlt()) {
           player.fireUlt();
         }
         if (key == 'w' || key == 'W') {
@@ -564,17 +618,22 @@ class GameManager {
   void updateWaveTime() {
     /* Updates and displays the timer bar */
     textSize(32);
-    if (timer.getCurrentTime() > waveMaxTime){
-      waveOver = true;
-      timer.pause();
-    }
-    else if (waveOver) {
+    if (!sceneManager.introSceneOver) {
       timer.pause();
     }
     else {
-      timer.keepRunning();
+      if (timer.getCurrentTime() > waveMaxTime){
+        waveOver = true;
+        timer.pause();
+      }
+      else if (waveOver) {
+        timer.pause();
+      }
+      else {
+        timer.keepRunning();
+      }
     }
-    
+
     // Fills timer bar
     fill(244,3,3);
     noStroke();

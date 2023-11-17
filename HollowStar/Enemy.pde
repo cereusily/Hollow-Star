@@ -63,15 +63,15 @@ class Enemy extends Character {
     
     if (deathTimer == 0) {
       drawDeath();
-      score += this.points;
-      enemies.remove(this);
+      gameManager.score += this.points;
+      gameManager.enemies.remove(this);
     }
     
     // Checks if touched player
     if (hitCharacter(player)) {
-      lastHitEnemy.add(this);
+      gameManager.lastHitEnemy.add(this);
       player.decreaseHealth(enemyPower);
-      screenShakeTimer = screenShakeValue;
+      gameManager.screenShakeTimer = screenShakeValue;
     }
   }
   
@@ -147,30 +147,30 @@ class Enemy extends Character {
     PVector tempPos = new PVector();
     tempPos = this.pos.copy();
     
-    PShape brokenPart = shipShape.getChild(enemyShipParts.get(partName));
-    parts.add(new Part(tempPos, new PVector(x, y), 80, brokenPart, this.scaleFactor * 0.5, PI/20, partRemoveTimer));
+    PShape brokenPart = shipShape.getChild(gameManager.enemyShipParts.get(partName));
+    gameManager.parts.add(new Part(tempPos, new PVector(x, y), 80, brokenPart, this.scaleFactor * 0.5, PI/20, partRemoveTimer));
   }
   
   void drawDeath() {    
-    for (String name : enemyShipParts.keySet()){
+    for (String name : gameManager.enemyShipParts.keySet()){
       breakPart(name);
     }
   }
   
   void initShipColour() {
-    PShape leftOuterWing = shipShape.getChild(enemyShipParts.get("LeftOuterWing"));    
+    PShape leftOuterWing = shipShape.getChild(gameManager.enemyShipParts.get("LeftOuterWing"));    
     leftOuterWing.setFill(stateColour);  
     
-    PShape rightOuterWing = shipShape.getChild(enemyShipParts.get("RightOuterWing"));
+    PShape rightOuterWing = shipShape.getChild(gameManager.enemyShipParts.get("RightOuterWing"));
     rightOuterWing.setFill(stateColour);
     
-    PShape leftInnerWing = shipShape.getChild(enemyShipParts.get("LeftInnerWing"));    
+    PShape leftInnerWing = shipShape.getChild(gameManager.enemyShipParts.get("LeftInnerWing"));    
     leftInnerWing.setFill(stateColour);  
     
-    PShape rightInnerWing = shipShape.getChild(enemyShipParts.get("RightInnerWing"));
+    PShape rightInnerWing = shipShape.getChild(gameManager.enemyShipParts.get("RightInnerWing"));
     rightInnerWing.setFill(stateColour);
     
-    PShape mainWindow = shipShape.getChild(enemyShipParts.get("MainWindow"));
+    PShape mainWindow = shipShape.getChild(gameManager.enemyShipParts.get("MainWindow"));
     mainWindow.setFill(stateColour);
   }
   

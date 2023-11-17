@@ -46,28 +46,28 @@ class BossEnemy extends Enemy {
     this.partRemoveTimer = 160;
     
     // Sets colour
-    PShape mainBody = shipShape.getChild(enemyShipParts.get("MainBody"));
+    PShape mainBody = shipShape.getChild(gameManager.enemyShipParts.get("MainBody"));
     mainBody.setFill(255);
     
-    PShape windowRoof = shipShape.getChild(enemyShipParts.get("WindowRoof"));
+    PShape windowRoof = shipShape.getChild(gameManager.enemyShipParts.get("WindowRoof"));
     windowRoof.setFill(255);
     
-    PShape leftInnerWing = shipShape.getChild(enemyShipParts.get("LeftInnerWing"));
+    PShape leftInnerWing = shipShape.getChild(gameManager.enemyShipParts.get("LeftInnerWing"));
     leftInnerWing.setFill(255);
     
-    PShape rightInnerWing = shipShape.getChild(enemyShipParts.get("RightInnerWing"));
+    PShape rightInnerWing = shipShape.getChild(gameManager.enemyShipParts.get("RightInnerWing"));
     rightInnerWing.setFill(255);
     
-    PShape leftWingBridge = shipShape.getChild(enemyShipParts.get("LeftWingBridge"));
+    PShape leftWingBridge = shipShape.getChild(gameManager.enemyShipParts.get("LeftWingBridge"));
     leftWingBridge.setFill(255);
     
-    PShape rightWingBridge = shipShape.getChild(enemyShipParts.get("RightWingBridge"));
+    PShape rightWingBridge = shipShape.getChild(gameManager.enemyShipParts.get("RightWingBridge"));
     rightWingBridge.setFill(255);
     
-    PShape leftOuterFlap = shipShape.getChild(enemyShipParts.get("LeftOuterFlap"));
+    PShape leftOuterFlap = shipShape.getChild(gameManager.enemyShipParts.get("LeftOuterFlap"));
     leftOuterFlap.setFill(255);
     
-    PShape rightOuterFlap = shipShape.getChild(enemyShipParts.get("RightOuterFlap"));
+    PShape rightOuterFlap = shipShape.getChild(gameManager.enemyShipParts.get("RightOuterFlap"));
     rightOuterFlap.setFill(255);
     
     // Minions :D
@@ -121,7 +121,7 @@ class BossEnemy extends Enemy {
       if (!waveUpdated) {
         gameManager.waveNum += 1;  // Indicates end of wave
         waveUpdated = true;
-        bossDead = true;
+        gameManager.bossDead = true;
       }
     }
   }
@@ -142,19 +142,19 @@ class BossEnemy extends Enemy {
         stateColour = red;
         break;
     }
-    PShape leftOuterWing = shipShape.getChild(enemyShipParts.get("LeftOuterWing"));    
+    PShape leftOuterWing = shipShape.getChild(gameManager.enemyShipParts.get("LeftOuterWing"));    
     leftOuterWing.setFill(stateColour);  
     
-    PShape rightOuterWing = shipShape.getChild(enemyShipParts.get("RightOuterWing"));
+    PShape rightOuterWing = shipShape.getChild(gameManager.enemyShipParts.get("RightOuterWing"));
     rightOuterWing.setFill(stateColour);
     
-    PShape leftInnerWing = shipShape.getChild(enemyShipParts.get("LeftInnerWing"));    
+    PShape leftInnerWing = shipShape.getChild(gameManager.enemyShipParts.get("LeftInnerWing"));    
     leftInnerWing.setFill(stateColour);  
     
-    PShape rightInnerWing = shipShape.getChild(enemyShipParts.get("RightInnerWing"));
+    PShape rightInnerWing = shipShape.getChild(gameManager.enemyShipParts.get("RightInnerWing"));
     rightInnerWing.setFill(stateColour);
     
-    PShape mainWindow = shipShape.getChild(enemyShipParts.get("MainWindow"));
+    PShape mainWindow = shipShape.getChild(gameManager.enemyShipParts.get("MainWindow"));
     mainWindow.setFill(stateColour); 
   }
   
@@ -198,16 +198,16 @@ class BossEnemy extends Enemy {
       Bullet currBullet = bossBullets.get(i);
       
       // checks players
-      for (int j = 0; j < players.size(); j++) {
-        Player currPlayer = players.get(j);
+      for (int j = 0; j < gameManager.players.size(); j++) {
+        Player currPlayer = gameManager.players.get(j);
         
         // If bullet is not same state as player
         if (currBullet.hit(player)) {
           if (currBullet.getState() != currPlayer.getState()) {
             currPlayer.decreaseHealth(bulletPower); 
-            screenShakeTimer = 2;
+            gameManager.screenShakeTimer = 2;
             currBullet.vel = new PVector(0, 0); // Zeroes out last hit for freeze effect
-            lastHitBullet.add(currBullet);
+            gameManager.lastHitBullet.add(currBullet);
           }
           // If state is same as player
           if (currBullet.getState() == currPlayer.getState()) {

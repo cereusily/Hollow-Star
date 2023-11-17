@@ -16,8 +16,8 @@ class Debug {
   
   void debugCheat() {
     if (cheatOn) {
-      if (players.size() > 0) {
-        Player player = players.get(0);
+      if (gameManager.players.size() > 0) {
+        Player player = gameManager.players.get(0);
         
         // Set cheats
         player.playerUlt.power = 2000;  // Insta kill taurus shot
@@ -34,16 +34,16 @@ class Debug {
     
     // Player
     text("PLAYER COORDINATES", 20, 370);
-    if (players.size() > 0) {
-      text(str(players.get(0).pos.x), 20, 400);
-      text(str(players.get(0).pos.y), 20, 430);
+    if (gameManager.players.size() > 0) {
+      text(str(gameManager.players.get(0).pos.x), 20, 400);
+      text(str(gameManager.players.get(0).pos.y), 20, 430);
     }
     
     // Last hit
     text("LAST HIT COORDINATES", 20, 500);
-    if (lastHitBullet.size() > 0) {
-      text(str(lastHitBullet.get(0).pos.x), 20, 530);
-      text(str(lastHitBullet.get(0).pos.y), 20, 560);
+    if (gameManager.lastHitBullet.size() > 0) {
+      text(str(gameManager.lastHitBullet.get(0).pos.x), 20, 530);
+      text(str(gameManager.lastHitBullet.get(0).pos.y), 20, 560);
     }
     
     // Wave number
