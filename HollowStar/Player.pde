@@ -65,6 +65,11 @@ class Player extends Character {
       switchCooldown++;
     }
     
+    // Sets ult if exceeds limit
+    if (ultimateMeter > ultimateMaxMeter) {
+      ultimateMeter = ultimateMaxMeter;
+    }
+    
     // Calls projectile hit
     checkProjectiles();
 
@@ -105,7 +110,7 @@ class Player extends Character {
   }
   
   boolean canUseUlt() {
-    return (this.ultimateMeter == this.ultimateMaxMeter);
+    return (this.ultimateMeter >= this.ultimateMaxMeter);
   }
   
   void addToUlt(int inc) {
@@ -141,7 +146,7 @@ class Player extends Character {
           // If not same state => double bullet power & increase ult
           if (currEnemy.getState() != currBullet.getState()) {
             currEnemy.decreaseHealth(currBullet.power * 2); 
-            addToUlt(5);
+            addToUlt(currEnemy.getUltValue());
             gameManager.screenShakeTimer = 3;
             currEnemy.pos.y -= 5;
           }
@@ -194,6 +199,8 @@ class Player extends Character {
     leftWing.setFill(secondaryFill); 
     PShape rightWing = shipShape.getChild(gameManager.playerShipParts.get("RightWing"));    
     rightWing.setFill(secondaryFill); 
+    PShape tailFlap = shipShape.getChild(gameManager.playerShipParts.get("TailFlap"));  
+    tailFlap.setFill(secondaryFill);
   }
   
   void breakPart(String partName) {
@@ -244,7 +251,7 @@ class Player extends Character {
     // Draws thrusters
     push();
     rotate(rotateFactor);
-    stroke(0, 0, 255);
+    stroke(this.stateColour);
     fill(255);
     ellipse(-125, 150, 30 + jitter, 80 + jitter);
     ellipse(125, 150, 30 + jitter, 80 + jitter);

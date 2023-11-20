@@ -44,7 +44,9 @@ class GameManager {
   int enemyRespawnStartTime;
   
   Timer timer = new Timer();
-  int waveMaxTime = 5_000;
+  int waveInitTime = 15_000;
+  int waveMaxTime = 15_000;
+  int waveTimeIncrement = 10_000;
   boolean waveOver;
   
   int waveNum = 0;
@@ -117,7 +119,6 @@ class GameManager {
     
     // <--- WAVE CODE --->
     resetWaveTime();
-
   }
   
   /**
@@ -210,7 +211,7 @@ class GameManager {
     textFont(gameManager.font);
     textSize(30);
     fill(255);
-    text("HI SCORE: " + str(score), 20, 50);
+    text("HI SCORE: " + str(score), 40, 50);
     text("LIVES: " + str(gameManager.lives), width - 175, 50);
       
     // Enemies remaining
@@ -227,8 +228,31 @@ class GameManager {
     fill(255);
   }
   
+  void displayWaveTime() {
+    // Draws wave time bar
+    // Fills timer bar
+    push();
+    translate(15, 0);
+    
+    fill(244,3,3);
+    noStroke();
+    rect(20, 100, map(timer.getCurrentTime(), 0, waveMaxTime, 0, 200), 19);
+    if (!waveOver) {
+      text(timer.getCurrentTime() + " " + int(waveMaxTime) +  " " + int (map(timer.getCurrentTime(), 0, waveMaxTime, 0, 200)), 20, 160);
+    }
+    else {
+      text("WAVE OVER", 20, 160);
+    }
+    
+    pop();
+  }
+  
   void displayUltMeter() {
     /* Displays player's ultimate meter */
+    push();
+    
+    translate(0, height/10);
+    
     if (player.canUseUlt()) {
       textAlign(CENTER);
       fill(255);
@@ -248,6 +272,8 @@ class GameManager {
     rect(30, 700, 200, 20, 28);
     
     textAlign(LEFT);
+    
+    pop();
   }
   
   void displayGameOver() {
@@ -286,15 +312,15 @@ class GameManager {
     
     // Line 1
     textSize(120);
-    text("HOLLOW STAR", width/2, 400);
+    text("HOLLOW STAR", width/2, height/2);
     
     // Line 2
     textSize(30);
-    text("< PRESS ENTER/RETURN TO START >", width/2, 470);
+    text("< PRESS ENTER/RETURN TO START >", width/2, height/2 + 100);
     
     // Line 3
     textSize(20);
-    text("< PRESS ESC TO QUIT >", width/2, 500);
+    text("< PRESS ESC TO QUIT >", width/2, height/2 + 140);
     
     // Line 4
     //textSize(20);
@@ -489,7 +515,8 @@ class GameManager {
     int x = (int) random(0, width);  // => spawn star at random x axis
     int starSpeed = (int) random(0, starMaxSpeed);
     
-    Star newStar = new Star(new PVector(x, 0), new PVector(0, starSpeed));
+    // Starts offscreen
+    Star newStar = new Star(new PVector(x, -5), new PVector(0, starSpeed));
     stars.add(newStar);
   }
   
@@ -624,6 +651,7 @@ class GameManager {
     else {
       if (timer.getCurrentTime() > waveMaxTime){
         waveOver = true;
+        addToWaveTime(waveTimeIncrement);  // Increases wavetime increment
         timer.pause();
       }
       else if (waveOver) {
@@ -633,17 +661,11 @@ class GameManager {
         timer.keepRunning();
       }
     }
-
-    // Fills timer bar
-    fill(244,3,3);
-    noStroke();
-    rect(20, 100, map(timer.getCurrentTime(), 0, waveMaxTime, 0, 200), 19);
-    if (!waveOver) {
-      text(timer.getCurrentTime() + " " + int(waveMaxTime) +  " " + int (map(timer.getCurrentTime(), 0, waveMaxTime, 0, 200)), 20, 160);
-    }
-    else {
-      text("WAVE OVER", 20, 160);
-    }
+    displayWaveTime();
+  }
+  
+  void addToWaveTime(int added) {
+    waveMaxTime += added;
   }
   
   void resetWaveTime() {
@@ -688,7 +710,7 @@ class GameManager {
     playerShipParts.put("MainBody", 9);
     playerShipParts.put("LeftWing", 10);
     playerShipParts.put("RightWing", 11);
-    playerShipParts.put("losingLeftLine", 12);
+    playerShipParts.put("ClosingLeftLine", 12);
     playerShipParts.put("ClosingRightLine", 13);
     playerShipParts.put("MainWindow", 14);
     playerShipParts.put("LeftHorn", 15);

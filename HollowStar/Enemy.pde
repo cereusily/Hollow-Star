@@ -16,6 +16,8 @@ class Enemy extends Character {
   color stateColour;
   String enemyType;
   
+  int ultValue = 5;
+  
   
   Enemy(PVector pos, PVector vel, int health, PVector size, float scaleFactor, String state, String enemyType) {
     // Inits fields
@@ -103,6 +105,10 @@ class Enemy extends Character {
   
   void setState(String newState) {
     this.state = newState;
+  }
+  
+  int getUltValue() {
+    return this.ultValue;
   }
   
   void updateShipColour() {

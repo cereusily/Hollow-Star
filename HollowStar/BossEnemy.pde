@@ -14,6 +14,8 @@ class BossEnemy extends Enemy {
   Gun bossSecondaryGun;
   
   int bulletPower = 1;
+  int bulletUltValue = 25;
+  
   float fireSpeed;
   int maxHealth;
   String name;
@@ -23,6 +25,8 @@ class BossEnemy extends Enemy {
     
     // Overrides fields
     this.points = 800 + (100 * gameManager.waveNum);
+    
+    this.ultValue = 0;
     
     // Sets max health
     this.maxHealth = health;
@@ -38,9 +42,9 @@ class BossEnemy extends Enemy {
     this.bossSecondaryGun = new AquariusGun(this.pos, new PVector(3 + gameManager.waveNum, 3 + gameManager.waveNum), bossBullets);
     
     // Sets thresholds
-    this.switchThreshold = 300 - (50 * gameManager.waveNum);
-    this.bossGun.threshold = 140 - (12 * gameManager.waveNum);
-    this.bossSecondaryGun.threshold = 60 - gameManager.waveNum;
+    this.switchThreshold = 300 - (25 * gameManager.waveNum);
+    this.bossGun.threshold = 150 - (12 * gameManager.waveNum);
+    this.bossSecondaryGun.threshold = 190 - gameManager.waveNum;
     
     // Sets parts duration
     this.partRemoveTimer = 160;
@@ -109,7 +113,24 @@ class BossEnemy extends Enemy {
     
     // Shoots gun
     bossGun.shoot((this.getState() == "BLUE" ? "RED" : "BLUE"));
-    bossSecondaryGun.shoot(this.getState());  // Gets opposite state
+    
+    // switch case based off wave num
+    switch(gameManager.waveNum) {
+      case 0:
+        if (getHealth() < this.maxHealth/2) { // uses at half health
+          bossSecondaryGun.shoot(this.getState());  // Gets opposite state
+        }
+        break;
+      case 1:
+        if (getHealth() < (this.maxHealth * 0.66)) { // uses at 2/3 health
+          bossSecondaryGun.shoot(this.getState());  // Gets opposite state
+        }
+        break;
+      default:
+        bossSecondaryGun.shoot(this.getState());
+        break;
+    }
+    
     
     updateBullets();
     
@@ -124,6 +145,10 @@ class BossEnemy extends Enemy {
         gameManager.bossDead = true;
       }
     }
+  }
+  
+  int getHealth() {
+    return this.health;
   }
   
   void switchState() {
@@ -211,7 +236,7 @@ class BossEnemy extends Enemy {
           }
           // If state is same as player
           if (currBullet.getState() == currPlayer.getState()) {
-            player.addToUlt(5);  // If bullet is same state as player, player absorbs & gains ult points
+            player.addToUlt(this.bulletUltValue);  // If bullet is same state as player, player absorbs & gains ult points
           }
           
           bossBullets.remove(currBullet);

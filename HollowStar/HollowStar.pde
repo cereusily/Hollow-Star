@@ -14,13 +14,13 @@ GameManager gameManager = new GameManager();
 SceneManager sceneManager = new SceneManager();
 
 // Debug tool + cheats inside
-Debug debug = new Debug(true);
+Debug debug = new Debug(false);
 
 
 void setup() {
   
   // Sets up window & background
-  size(1200, 800);
+  fullScreen();
   background(0);
   
   // Init assest from GameManager;
@@ -120,6 +120,7 @@ void runGame() {
         }
         else {  // If no more lives, displays game over
           gameManager.displayGameOver();
+          gameManager.waveMaxTime = gameManager.waveInitTime;
         }
       }
       
