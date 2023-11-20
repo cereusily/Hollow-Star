@@ -1,6 +1,7 @@
 class GameManager {
   /* Helper class that manages game */
   boolean isActive;
+  boolean gameWin;
   
   boolean gameOver;
   boolean gameStart = false;
@@ -46,11 +47,22 @@ class GameManager {
   Timer timer = new Timer();
   int waveInitTime = 15_000;
   int waveMaxTime = 15_000;
-  int waveTimeIncrement = 10_000;
+  int waveTimeIncrement = 5_000;
+  int finalWaveNum = 3; // 0,1,2, 3 waves
   boolean waveOver;
+  boolean waveUpdated = false;
   
   int waveNum = 0;
   boolean bossSpawned = false;
+  
+  // Boss ripple effects when die
+  float rippleSize;  
+  float maxRippleSize = 4000;
+  float rippleColorIncrement = 0.01;
+  color current = color(255);
+  color newColor;
+  
+  int rippleTimer;
   
   float angle;
   PFont font;
@@ -90,6 +102,14 @@ class GameManager {
     
     // Starts timer
     timer.begin();
+  }
+  
+  void setGameWin() {
+    gameWin = true;
+  }
+  
+  boolean checkGameWin() {
+    return finalWaveNum <= (waveNum - 1);
   }
   
   void restart() {
@@ -197,8 +217,46 @@ class GameManager {
     /* Function that kills all */
     for (int i = 0; i < enemies.size(); i++) {
       Enemy currEnemy = enemies.get(i);
-      currEnemy.health = 0;
+      currEnemy.health = -1;
     }
+  }
+  
+  void startRippleTimer() {
+    rippleTimer = 120;
+  }
+  
+  void checkBossRipple() {
+    // Check if theres ripple timer wee
+    if (rippleTimer > 0) {
+      displayBossRipple();
+    }
+    rippleTimer--;
+  }
+  
+  void displayBossRipple() {
+    // Draws boss explosion ripples
+    push();
+    noFill();
+    
+    translate(width/2, height/4);  // rough location where boss is
+    stroke(255);
+    
+    // Lerps colours
+    newColor = lerpColor(current, black, rippleColorIncrement);
+    
+    if (rippleSize <= maxRippleSize) {
+      stroke(newColor);
+      strokeWeight(16);
+      
+      // Draws ripples
+      rippleSize += 20;
+      ellipse(0, 0, rippleSize, rippleSize);
+      ellipse(0, 0, rippleSize * .75, rippleSize * .75);
+      ellipse(0, 0, rippleSize * .5, rippleSize * .5);
+      
+      rippleColorIncrement += 0.01;
+    }
+    pop();
   }
   
   /**  
@@ -208,6 +266,7 @@ class GameManager {
   */
   
   void displayText() {
+    push();
     textFont(gameManager.font);
     textSize(30);
     fill(255);
@@ -226,6 +285,7 @@ class GameManager {
     text(str(enemies.size()), width - 50, 100); 
     textSize(30);
     fill(255);
+    pop();
   }
   
   void displayWaveTime() {
@@ -278,6 +338,8 @@ class GameManager {
   
   void displayGameOver() {
     
+    push();
+    
     // Pauses timer
     timer.pause();
     
@@ -290,6 +352,8 @@ class GameManager {
     text("< PRESS ENTER/RETURN TO CONTINUE >", width/2, 450);
     textAlign(LEFT);
     gameOver = true;
+    
+    pop();
   }
   
   void displayMenu() {
@@ -333,19 +397,20 @@ class GameManager {
   
   void displayEndGame() {
     // Line 1
-    background(0);
+    push();
     textAlign(CENTER);
     
     textSize(120);
-    text("YOU WIN", width/2, 400);
+    text("CONGRATULATIONS.", width/2, 400);
     
     // Line 2
     textSize(30);
-    text("YOU SAVED THE GALAXY", width/2, 470);
+    text("YOU HAVE SAVED THE GALAXY.", width/2, 470);
     
     // Line 3
     textSize(20);
     text("HI SCORE: " + str(score), width/2, 500); 
+    pop();
   }
   
   
@@ -423,14 +488,18 @@ class GameManager {
         }
         menuOn = true;
       }
-      // Resets game if enter / return is entered
-      if ((key == ENTER || key == RETURN) && gameOver) {  // Starts game
-          lives = 3;
-          score = 0;
-          waveNum = 0;
-          sceneManager.introSceneOver = false;
-          restart();
+      if (gameOver) {
+        // Resets game if over
+        // Resets game if enter / return is entered
+        if ((key == ENTER || key == RETURN)) {  // Starts game
+            lives = 3;
+            score = 0;
+            waveNum = 0;
+            sceneManager.introSceneOver = false;
+            restart();
+        }
       }
+      
     }
   }
   
@@ -613,6 +682,9 @@ class GameManager {
   }
   
   void updateEnemies() {
+    // displays explosions
+    gameManager.checkBossRipple();
+    
     /* Updates enemy sprites */
     for (int i = 0; i < enemies.size(); i++) {
       Enemy currEnemy = enemies.get(i);
@@ -651,7 +723,6 @@ class GameManager {
     else {
       if (timer.getCurrentTime() > waveMaxTime){
         waveOver = true;
-        addToWaveTime(waveTimeIncrement);  // Increases wavetime increment
         timer.pause();
       }
       else if (waveOver) {

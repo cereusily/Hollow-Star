@@ -131,7 +131,6 @@ class BossEnemy extends Enemy {
         break;
     }
     
-    
     updateBullets();
     
     // Recharges gun
@@ -141,10 +140,21 @@ class BossEnemy extends Enemy {
     if (!super.isAlive()) {
       if (!waveUpdated) {
         gameManager.waveNum += 1;  // Indicates end of wave
+        gameManager.addToWaveTime(gameManager.waveTimeIncrement);  // Increases wavetime increment
+        gameManager.killAllEnemies();
+        // resets ripples
+        setupRipple();
         waveUpdated = true;
         gameManager.bossDead = true;
       }
     }
+  }
+  
+  void setupRipple() {
+    gameManager.rippleSize = 0;
+    gameManager.rippleColorIncrement = 0;
+    gameManager.newColor = color(255);
+    gameManager.startRippleTimer();
   }
   
   int getHealth() {

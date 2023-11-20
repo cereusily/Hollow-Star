@@ -11,10 +11,12 @@ class SceneManager {
   boolean introSceneOver = false;
   boolean bossSceneOver = false;
   boolean bossDeathSceneOver  = false;
+  boolean finalSceneOver = false;
   
   String lineOne;
   String lineTwo;
   String lineThree;
+  String lineFour;
   
   SceneManager() {
     // Creates new timer to manage timing
@@ -127,18 +129,23 @@ class SceneManager {
     switch (gameManager.waveNum) {
       case 0:
         lineOne = "WARNING! NEW ANOMALY DETECTED.";
-        lineTwo = "HOLLOW STAR DETECTED.";
-        lineThree = "COMPLETE YOUR OBJECTIVE.";
+        lineTwo = "HOLLOW STAR DETECTED. COMPLETE THE OBJECTIVE:";
+        lineThree = "OBJECTIVE: DESTROY THE HOLLOW STAR.";
         break;
       case 1:
-        lineOne = "WARNING! ANOMALY DETECTED.";
+        lineOne = "WARNING! AN ANOMALY DETECTED.";
         lineTwo = "UPGRADED HOLLOW STAR DETECTED.";
-        lineThree = "COMPLETE YOUR OBJECTIVE";
+        lineThree = "OBJECTIVE: DESTROY THE UPGRADED HOLLOW STAR.";
+        break;
+      case 2:
+        lineOne = "WARNING! WARNING! WARNING!";
+        lineTwo = "FINAL HOLLOW STAR DETECTED.";
+        lineThree = "OBJECTIVE: DESTROY THE FINAL HOLLOW STAR.";
         break;
       default:
         lineOne = "WARNING WARNING WARNING";
         lineTwo = "HOLLOW STAR UPGRADES CONTINUES";
-        lineThree = "COMPLETE YOUR OBJECTIVE.";
+        lineThree = "COMPLETE THE OBJECTIVE.";
         break;
     }
     
@@ -157,6 +164,7 @@ class SceneManager {
       timerStarted = false;
       timer.reset();
     }
+
     pop();
     
   }
@@ -170,25 +178,54 @@ class SceneManager {
       timer.begin();
       timerStarted = true;
     }
-    fill(red);
+    fill(green);
     rectMode(CENTER);
     rect(width/2, height/2 - 20, width, 80);
         
     // Text settings
     setText();
     
+    switch (gameManager.waveNum) {
+      case 1:
+        lineOne = "HOLLOW STAR DESTROYED. OBJECTIVE CLEARED.";
+        lineTwo = "SCANNING FOR ANOMALIES...";
+        lineThree = "UPDATE! MULTIPLE HOLLOW STARS DETECTED.";
+        lineFour = "CONTINUE THE OBJECTIVE.";
+        break;
+      case 2:
+        lineOne = "SECOND HOLLOW STAR DESTROYED.";
+        lineTwo = "SCANNING FOR ANOMALIES...";
+        lineThree = "UPDATE! FINAL HOLLOW STAR FOUND.";
+        lineFour = "COMPLETE THE OBJECTIVE.";
+        break;
+      case 3:
+        lineOne = "FINAL HOLLOW STAR DESTROYED.";
+        lineTwo = "NO ADDITIONAL HOLLOW STARS DETECTED.";
+        lineThree = "GALACTIC REGION SECURED.";
+        lineFour = "OBJECTIVE COMPLETE.";
+        finalSceneOver = true;
+        break;
+      default:
+        lineOne = "HOLLOW STAR DESTROYED. OBJECTIVE CLEARED.";
+        lineTwo = "WARNING! ADDITIONAL ANOMALIES DETECTED.";
+        lineThree = "MULTIPLE HOLLOW STARS DETECTED.";
+        lineFour = "CONTINUE THE OBJECTIVE.";
+        break;
+    }
+    
+    
     // Plays first line
     if (timer.getCurrentTime() < 2_000) {
-      text("HOLLOW STAR DESTROYED. OBJECTIVE CLEARED.", width/2, height/2);
+      text(lineOne, width/2, height/2);
     }
     else if (timer.getCurrentTime() < 4_500) {
-      text("WARNING! ADDITIONAL ANOMALIES DETECTED.", width/2, height/2);
+      text(lineTwo, width/2, height/2);
     }
     else if (timer.getCurrentTime() < 6_500) {
-      text("MULTIPLE HOLLOW STARS DETECTED.", width/2, height/2);
+      text(lineThree, width/2, height/2);
     }
     else if (timer.getCurrentTime() < 8_500) {
-      text("CONTINUE YOUR OBJECTIVE.", width/2, height/2);
+      text(lineFour, width/2, height/2);
     }
     else {
       bossDeathSceneOver = true;

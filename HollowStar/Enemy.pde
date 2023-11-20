@@ -131,7 +131,7 @@ class Enemy extends Character {
     translate(pos.x, pos.y);
     
    // Bounding radial
-   if (debug.active) {
+   if (debug.active && debug.showHitbox) {
      fill(enemyColour);
      ellipse(0, 0, size.x, size.y);
    }

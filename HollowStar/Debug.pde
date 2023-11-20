@@ -2,12 +2,33 @@ class Debug {
   // Debug class
   boolean active;
   boolean cheatOn;
+  boolean showHitbox;
+  boolean skipTutorial;
+  PVector lastHitCoordinates;
+  int waveTime;
   
   Debug(boolean active) {
+    waveTime = 2_000;
     this.active = active;
     
-/* Change this if you want to cheat for testing purposes */
-    this.cheatOn = true;
+    if (active) {
+      //last hit
+      lastHitCoordinates = new PVector(0, 0);
+      // Wave timew
+      gameManager.waveMaxTime = waveTime;
+      gameManager.waveTimeIncrement = 0;
+      
+  /* Change this if you want to cheat for testing purposes */
+      this.cheatOn = true;
+      this.skipTutorial = true;
+      
+      if (skipTutorial) {
+        sceneManager.tutorialSceneOver = true;
+      }
+      
+      // Hide hitboxes
+      showHitbox = false;
+    }
   }
   
   boolean getState() {
@@ -41,10 +62,12 @@ class Debug {
     
     // Last hit
     text("LAST HIT COORDINATES", 20, 500);
-    if (gameManager.lastHitBullet.size() > 0) {
-      text(str(gameManager.lastHitBullet.get(0).pos.x), 20, 530);
-      text(str(gameManager.lastHitBullet.get(0).pos.y), 20, 560);
+    if (gameManager.players.size() == 0) {
+      text(str(lastHitCoordinates.x), 20, 530);
+      text(str(lastHitCoordinates.y), 20, 560);
     }
+    
+
     
     // Wave number
     text("WAVE NUMBER", 20, 610);

@@ -98,7 +98,11 @@ class Player extends Character {
     if (health < 1) {
       
       // Sets animations
-      if (isAlive()) {      
+      if (isAlive()) {    
+        // update debug
+        if (debug.active) {
+          debug.lastHitCoordinates = this.pos.copy();
+        }
         deathTimer = deathAnimationTime;
         gameManager.screenShake = 100;
       }
@@ -268,7 +272,7 @@ class Player extends Character {
     push();
     scale(1);
     // Bounding radial
-    if (debug.active) {
+    if (debug.active && debug.showHitbox) {
       fill(0, 255, 0);
       ellipse(0, 0, size.x, size.y);
     }
