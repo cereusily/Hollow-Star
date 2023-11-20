@@ -2,6 +2,10 @@
 ## The Galaxy is in danger.
 The Legion is a self-sustaining AI that went rogue a millenia ago. Now, it has reached the outskirts of your home galaxy with an ultimate weapon: The Hollow Star. Take control of callsign ATLAS, a starship engineered using the same mysterious energy powering the Legion, giving you the ability to harness their power of polarity. It is now up to you to destroy the Hollow Star and return the Legion to stardust! 
 
+## Gameplay Screenshots
+<img width="1440" alt="Screen Shot 2023-11-19 at 11 04 26 PM" src="https://github.com/cereusily/Hollow-Star/assets/63133156/7ca6a29c-503f-41e0-a9cb-dc58fa481251">
+
+
 ## How to Play
 ARROW KEYS/WASD - Move Starship<br/>
 SHIFT - Switch Polarities<br/>
